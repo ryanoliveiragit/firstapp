@@ -63,20 +63,6 @@ export function UnifiedLogin() {
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-orange-950/20" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-900/20 via-transparent to-transparent" />
 
-      <header className="relative z-20 border-b border-border/40 backdrop-blur-sm">
-        <nav className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-red-600 to-red-500">
-              <Gauge className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <span className="text-xl font-bold text-foreground block">KNZ Otimizações</span>
-              <span className="text-xs text-muted-foreground">Maximize a performance do seu PC</span>
-            </div>
-          </div>
-        </nav>
-      </header>
-
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
@@ -84,10 +70,10 @@ export function UnifiedLogin() {
               <div className="space-y-4">
                 <AudioWave />
                 <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
-                  Otimize seu PC
+                  KNZ
                   <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500">
-                    ao máximo
+                    FPS BOOST
                   </span>
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
