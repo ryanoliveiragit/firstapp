@@ -1,7 +1,13 @@
-import { AppContainer } from "./components/app-container";
+import { NeuralBackground } from "./components/neural-background";
+import { UnifiedLogin } from "./components/unified-login";
 
 function App() {
-  return <AppContainer />;
+  return (
+    <>
+      <NeuralBackground />
+      <UnifiedLogin />
+    </>
+  );
 }
 
 export default App;
