@@ -1,13 +1,7 @@
-import { NeuralBackground } from "./components/neural-background";
-import { LoginScreen } from "./components/login-screen";
+import { AppContainer } from "./components/app-container";
 
 function App() {
-  return (
-    <>
-      <NeuralBackground />
-      <LoginScreen />
-    </>
-  );
+  return <AppContainer />;
 }
 
 export default App;
