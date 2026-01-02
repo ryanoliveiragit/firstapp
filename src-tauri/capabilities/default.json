@@ -23,13 +23,17 @@
           ]
         },
         {
-          "program": "cmd",
+          "program": "regedit.exe",
           "sidecar": false,
           "args": [
-            "/C",
-            "start",
-            "",
-            "regedit.exe",
+            "/s",
+            { "validator": "^.+\\.reg$" }
+          ]
+        },
+        {
+          "program": "regedit",
+          "sidecar": false,
+          "args": [
             "/s",
             { "validator": "^.+\\.reg$" }
           ]

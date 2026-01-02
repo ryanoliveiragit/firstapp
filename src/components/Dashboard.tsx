@@ -26,14 +26,7 @@ export default function Dashboard() {
     setIsApplyingFPS(true);
     try {
       const regPath = await resolveResource('fps-boost.reg');
-      const output = await Command.create('cmd', [
-        '/C',
-        'start',
-        '',
-        'regedit.exe',
-        '/s',
-        regPath,
-      ]).execute();
+      const output = await Command.create('regedit.exe', ['/s', regPath]).execute();
 
       if (output.code === 0) {
         alert('✓ FPS Boost aplicado com sucesso!');
