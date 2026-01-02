@@ -9,12 +9,17 @@ echo =========================================
 timeout /t 2 >nul
 
 :: ================================
-:: DETECCAO DA GPU
+:: DETECCAO DA GPU (PowerShell)
 :: ================================
-wmic path win32_VideoController get name | findstr /I "NVIDIA" >nul
+set "GPU_NAME="
+for /f "usebackq delims=" %%G in (`powershell -NoProfile -Command "Get-CimInstance Win32_VideoController | Select-Object -First 1 -ExpandProperty Name"`) do set "GPU_NAME=%%G"
+
+echo GPU detectada: %GPU_NAME%
+
+echo %GPU_NAME% | findstr /I "NVIDIA" >nul
 if %errorlevel%==0 goto NVIDIA
 
-wmic path win32_VideoController get name | findstr /I "AMD Radeon" >nul
+echo %GPU_NAME% | findstr /I "AMD" >nul
 if %errorlevel%==0 goto AMD
 
 echo.

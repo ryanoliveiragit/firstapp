@@ -18,7 +18,8 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": ["default"]
     }
   },
   "bundle": {
@@ -32,7 +33,7 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "auto-gpu-config.ps1.cmd"
+      "auto-gpu-config.bat"
     ]
   }
 }

@@ -25,25 +25,31 @@ export default function Dashboard() {
     console.log('Executing FPS Boost registry tweak...');
   };
 
+  const handleAutoGPU = async () => {
+    setIsExecuting(true);
+    try {
+      const batchPath = await resolveResource('auto-gpu-config.bat');
+      const output = await Command.create('cmd', [
+        '/C',
+        'start',
+        '',
+        'cmd.exe',
+        '/C',
+        'call',
+        batchPath,
+      ]).execute();
 
-const handleAutoGPU = async () => {
-  setIsExecuting(true);
-  try {
-    const resourcePath = await resolveResource('auto-gpu-config.ps1');
-    const output = await Command.create('run-bat', [resourcePath]).execute();
-    
-    if (output.code === 0) {
-      alert('✓ GPU configurada com sucesso!');
-    } else {
-      alert(`✗ Erro: ${output.stderr}`);
+      if (output.code === 0) {
+        alert('✓ GPU configurada com sucesso!');
+      } else {
+        alert(`✗ Erro ao configurar GPU: ${output.stderr || 'Código de saída diferente de zero.'}`);
+      }
+    } catch (error) {
+      alert(`✗ Erro: ${error}`);
+    } finally {
+      setIsExecuting(false);
     }
-  } catch (error) {
-    alert(`✗ Erro: ${error}`);
-  } finally {
-    setIsExecuting(false);
-  }
-};
-
+  };
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
