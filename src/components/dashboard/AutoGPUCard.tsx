@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Gpu, Loader2, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface AutoGPUCardProps {
   isExecuting: boolean;
@@ -16,7 +16,7 @@ const features = [
 ];
 
 export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useLocalStorage('auto-gpu-enabled', false);
 
   const handleToggle = (checked: boolean) => {
     setIsEnabled(checked);

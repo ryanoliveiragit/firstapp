@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Check, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface MaintenanceCardProps {
   isExecuting: boolean;
@@ -15,7 +15,7 @@ const maintenanceTasks = [
 ];
 
 export function MaintenanceCard({ isExecuting, onExecute }: MaintenanceCardProps) {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useLocalStorage('maintenance-enabled', false);
 
   const handleToggle = (checked: boolean) => {
     setIsEnabled(checked);

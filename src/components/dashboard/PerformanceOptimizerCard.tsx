@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Check, Rocket } from 'lucide-react';
-import { useState } from 'react';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface PerformanceOptimizerCardProps {
   isExecuting: boolean;
@@ -15,7 +15,7 @@ const tweaks = [
 ];
 
 export function PerformanceOptimizerCard({ isExecuting, onExecute }: PerformanceOptimizerCardProps) {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useLocalStorage('performance-optimizer-enabled', false);
 
   const handleToggle = (checked: boolean) => {
     setIsEnabled(checked);

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Check, Wifi } from 'lucide-react';
-import { useState } from 'react';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface NetworkOptimizerCardProps {
   isExecuting: boolean;
@@ -15,7 +15,7 @@ const optimizations = [
 ];
 
 export function NetworkOptimizerCard({ isExecuting, onExecute }: NetworkOptimizerCardProps) {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useLocalStorage('network-optimizer-enabled', false);
 
   const handleToggle = (checked: boolean) => {
     setIsEnabled(checked);

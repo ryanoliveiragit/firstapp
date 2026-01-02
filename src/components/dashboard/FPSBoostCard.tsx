@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Check, Zap } from "lucide-react";
-import { useState } from "react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface FPSBoostCardProps {
   isApplying: boolean;
@@ -21,7 +21,7 @@ const features = [
 ];
 
 export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useLocalStorage("fps-boost-enabled", false);
 
   const handleToggle = (checked: boolean) => {
     setIsEnabled(checked);
