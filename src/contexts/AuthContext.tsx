@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { listen } from '@tauri-apps/api/event';
-import { open } from '@tauri-apps/plugin-opener';
+import { open } from '@tauri-apps/plugin-shell';
+
 interface DiscordUser {
   id: string;
   username: string;
