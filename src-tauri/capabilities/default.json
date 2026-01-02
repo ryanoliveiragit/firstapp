@@ -7,6 +7,34 @@
     "core:default",
     "shell:allow-open",
     {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            "start",
+            "",
+            "cmd.exe",
+            "/C",
+            "call",
+            { "validator": "^.+$" }
+          ]
+        },
+        {
+          "name": "powershell-elevated",
+          "cmd": "powershell",
+          "args": [
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            { "validator": "^Start-Process .+$" }
+          ]
+        }
+      ]
+    },
+    {
       "identifier": "shell:allow-execute",
       "allow": [
         {
@@ -20,6 +48,16 @@
             "/C",
             "call",
             { "validator": "^.+$" }
+          ]
+        },
+        {
+          "name": "powershell-elevated",
+          "cmd": "powershell",
+          "args": [
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            { "validator": "^Start-Process .+$" }
           ]
         },
         {
