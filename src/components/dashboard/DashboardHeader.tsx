@@ -15,7 +15,7 @@ interface DashboardHeaderProps {
 
 const tabTitles = {
   regedits: {
-    title: 'Registry Tweaks',
+    title: 'Regedits',
     description: 'Otimizações de registro do sistema'
   },
   exec: {

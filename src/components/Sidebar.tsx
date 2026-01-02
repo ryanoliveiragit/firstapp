@@ -21,13 +21,13 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <div className="w-64 h-screen border-r border-border flex flex-col animate-slide-in-left">
+    <div className="w-64 h-screen border-r border-white/30 flex flex-col animate-slide-in-left">
  
        <img 
     src='/gradient-1.png' 
     className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
   />
-      <div className="p-6 border-b border-border">
+      <div className="p-4">
         <div className="flex items-center gap-3 animate-fade-in-up">
           <div className="w-8 h-8 bg-foreground dark:bg-transparent rounded-md flex items-center justify-center overflow-hidden hover:scale-110 transition-transform duration-300">
             {!logoError ? (
@@ -72,7 +72,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-3 border-t border-border animate-fade-in" style={{ animationDelay: '300ms' }}>
+      <div className="p-3 border-t border-white/30 animate-fade-in" style={{ animationDelay: '300ms' }}>
         
         <button
           onClick={logout}

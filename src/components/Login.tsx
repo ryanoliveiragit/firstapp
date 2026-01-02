@@ -48,7 +48,7 @@ const Login = () => {
           </div>
 
           <Card className=" backdrop-blur-xl shadow-2xl animate-scale-in hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500" style={{ animationDelay: '200ms' }}>
-            <CardHeader className="space-y-1 pb-4">
+            <CardHeader className="space-y-1 pb-4 justify-cente text-center">
               <CardTitle className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</CardTitle>
               <CardDescription>
                 Faça login com sua conta Discord para continuar
