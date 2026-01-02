@@ -503,14 +503,7 @@ export default function Dashboard() {
 
             {activeTab === 'optimizations' && (
               <div className="space-y-4">
-                <Card className="glass-panel glass-card animate-fade-in-up" style={{ animationDelay: '50ms' }}>
-                  <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-1">
-                      <CardTitle>Otimizações</CardTitle>
-                      <CardDescription>O nível avançado é carregado automaticamente para sua key.</CardDescription>
-                    </div>
-                  </CardHeader>
-                </Card>
+
 
                 {renderOptimizationContent()}
               </div>
