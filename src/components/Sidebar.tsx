@@ -86,10 +86,6 @@ export default function Sidebar({ activeTab, setActiveTab, isOptimizationsLoadin
       </nav>
 
       <div className="p-4 border-t border-white/10 relative z-10 animate-fade-in" style={{ animationDelay: '300ms' }}>
-        <div className="glow-pill mb-3">
-          <span className="glow-dot" />
-          <span className="text-[11px] text-muted-foreground">Sessão segura</span>
-        </div>
         <button
           onClick={logout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200 hover:scale-[1.02]"

@@ -44,12 +44,12 @@ export function MaintenanceCard({ isExecuting, onExecute }: MaintenanceCardProps
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                <span className="text-[11px] text-green-500">Higienização</span>
+                <span className="text-[11px] text-green-500">Limpeza</span>
               </>
             ) : (
               <>
                 <span className="glow-dot bg-muted" />
-                <span className="text-[11px] text-muted-foreground">Higienização</span>
+                <span className="text-[11px] text-muted-foreground">Limpeza</span>
               </>
             )}
           </div>
