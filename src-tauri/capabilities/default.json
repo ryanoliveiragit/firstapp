@@ -6,6 +6,64 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
+    "shell:allow-spawn",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            "start",
+            "",
+            "cmd.exe",
+            "/C",
+            "call",
+            { "validator": "^.+$" }
+          ]
+        },
+        {
+          "name": "powershell-elevated",
+          "cmd": "powershell",
+          "args": [
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            { "validator": "^Start-Process .+$" }
+          ]
+        },
+        {
+          "name": "regedit-start",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            "start",
+            "",
+            "regedit.exe",
+            "/s",
+            { "validator": "^.+\\.reg$" }
+          ]
+        },
+        {
+          "name": "regedit-exe",
+          "cmd": "regedit.exe",
+          "args": [
+            "/s",
+            { "validator": "^.+\\.reg$" }
+          ]
+        },
+        {
+          "name": "regedit",
+          "cmd": "regedit",
+          "args": [
+            "/s",
+            { "validator": "^.+\\.reg$" }
+          ]
+        }
+      ]
+    },
+    "shell:allow-execute",
     {
       "identifier": "shell:allow-execute",
       "allow": [
@@ -20,6 +78,16 @@
             "/C",
             "call",
             { "validator": "^.+$" }
+          ]
+        },
+        {
+          "name": "powershell-elevated",
+          "cmd": "powershell",
+          "args": [
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            { "validator": "^Start-Process .+$" }
           ]
         },
         {
