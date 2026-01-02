@@ -23,7 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center overflow-hidden">
+          <div className="w-8 h-8 bg-foreground dark:bg-transparent rounded-md flex items-center justify-center overflow-hidden">
             {!logoError ? (
               <img
                 src="/logo.png"
