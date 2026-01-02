@@ -14,6 +14,11 @@
           "cmd": "cmd",
           "args": [
             "/C",
+            "start",
+            "",
+            "cmd.exe",
+            "/C",
+            "call",
             { "validator": "^.+$" }
           ]
         }
