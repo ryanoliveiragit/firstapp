@@ -347,8 +347,6 @@ export default function Dashboard() {
                 style={{ animationDelay: '100ms' }}
               >
                 <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
-                <PerformanceOptimizerCard isExecuting={isOptimizingPerformance} onExecute={handlePerformanceOptimization} />
-                <NetworkOptimizerCard isExecuting={isOptimizingNetwork} onExecute={handleNetworkOptimization} />
                 <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
               </div>
             )}
