@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from './Sidebar';
-import { Command, Child } from '@tauri-apps/plugin-shell';
+import { Command } from '@tauri-apps/plugin-shell';
 import { resolveResource } from '@tauri-apps/api/path';
+import { toast } from 'sonner';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { WarningBanner } from './dashboard/WarningBanner';
 import { FPSBoostCard } from './dashboard/FPSBoostCard';
@@ -22,6 +23,9 @@ export default function Dashboard() {
   const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
   const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
+  const adminConsentResolver = useRef<((value: boolean) => void) | null>(null);
   const [commandOutput, setCommandOutput] = useState<string[]>([]);
   const { user } = useAuth();
 
@@ -47,16 +51,10 @@ export default function Dashboard() {
   const requestAdminPermission = async () => {
     if (hasAdminConsent) return true;
 
-    const confirmElevation = window.confirm(
-      'Precisamos de permissão de administrador para aplicar otimizações. Clique em OK e aceite o prompt do Windows.'
-    );
-
-    if (!confirmElevation) {
-      return false;
-    }
-
-    setHasAdminConsent(true);
-    return true;
+    return new Promise<boolean>(resolve => {
+      adminConsentResolver.current = resolve;
+      setShowAdminModal(true);
+    });
   };
 
   useEffect(() => {
@@ -72,16 +70,27 @@ export default function Dashboard() {
     setCommandOutput([]);
   };
 
+  const finalizeConsole = () => {
+    setShowConsole(false);
+    clearOutput();
+  };
+
+  const ensureShellPermissions = async () => true;
+
   const runBatchCommandWithOutput = async (
     resourceName: string,
     onSuccess: string,
     onError: string,
     setLoading: (value: boolean) => void
   ) => {
+    const hasShellPermission = await ensureShellPermissions();
+    if (!hasShellPermission) return;
+
     const hasPermission = await requestAdminPermission();
     if (!hasPermission) return;
 
     setLoading(true);
+    setShowConsole(true);
     clearOutput();
     addOutput(`Iniciando ${resourceName}...`);
 
@@ -111,20 +120,24 @@ export default function Dashboard() {
         logCommandResult(resourceName, { code: data.code });
         
         if (data.code === 0) {
-          addOutput(`✓ ${onSuccess}`);
-          alert(onSuccess);
+          const successMessage = `✓ ${onSuccess}`;
+          addOutput(successMessage);
+          toast.success(successMessage);
         } else {
-          addOutput(`✗ ${onError} - Código: ${data.code}`);
-          alert(`${onError}: Código de saída ${data.code}`);
+          const failMessage = `✗ ${onError} - Código: ${data.code}`;
+          addOutput(failMessage);
+          toast.error(`${onError}: Código de saída ${data.code}`);
         }
         setLoading(false);
+        finalizeConsole();
       });
 
       // Escuta erros
       cmd.on('error', (error: string) => {
         addOutput(`[ERRO] ${error}`);
-        alert(`${onError}: ${error}`);
+        toast.error(`${onError}: ${error}`);
         setLoading(false);
+        finalizeConsole();
       });
 
       await cmd.spawn();
@@ -132,16 +145,21 @@ export default function Dashboard() {
       console.error(`[Synapse] ${resourceName} error:`, error);
       const errorMsg = error instanceof Error ? error.message : String(error);
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
-      alert(`${onError}: ${errorMsg}`);
+      toast.error(`${onError}: ${errorMsg}`);
       setLoading(false);
+      finalizeConsole();
     }
   };
 
   const handleFPSBoost = async () => {
+    const hasShellPermission = await ensureShellPermissions();
+    if (!hasShellPermission) return;
+
     const hasPermission = await requestAdminPermission();
     if (!hasPermission) return;
 
     setIsApplyingFPS(true);
+    setShowConsole(true);
     clearOutput();
     addOutput('Aplicando FPS Boost...');
 
@@ -168,19 +186,23 @@ export default function Dashboard() {
         logCommandResult('fps-boost.reg', { code: data.code });
 
         if (data.code === 0) {
-          addOutput('✓ FPS Boost aplicado com sucesso!');
-          alert('✓ FPS Boost aplicado com sucesso!');
+          const successMessage = '✓ FPS Boost aplicado com sucesso!';
+          addOutput(successMessage);
+          toast.success(successMessage);
         } else {
-          addOutput(`✗ Erro ao aplicar FPS Boost - Código: ${data.code}`);
-          alert(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
+          const failMessage = `✗ Erro ao aplicar FPS Boost - Código: ${data.code}`;
+          addOutput(failMessage);
+          toast.error(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
         }
         setIsApplyingFPS(false);
+        finalizeConsole();
       });
 
       cmd.on('error', (error: string) => {
         addOutput(`[ERRO] ${error}`);
-        alert(`✗ Erro: ${error}`);
+        toast.error(`✗ Erro: ${error}`);
         setIsApplyingFPS(false);
+        finalizeConsole();
       });
 
       await cmd.spawn();
@@ -188,8 +210,9 @@ export default function Dashboard() {
       console.error('[Synapse] fps-boost.reg error:', error);
       const errorMsg = error instanceof Error ? error.message : String(error);
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
-      alert(`✗ Erro: ${errorMsg}`);
+      toast.error(`✗ Erro: ${errorMsg}`);
       setIsApplyingFPS(false);
+      finalizeConsole();
     }
   };
 
@@ -231,6 +254,47 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-gray-600/10 overflow-hidden">
+      {showAdminModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4 text-white">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600/20 text-blue-400">
+                <span className="text-xl">!</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold">Permissão de Administrador</h3>
+                <p className="text-sm text-gray-300">
+                  Precisamos da sua autorização para executar otimizações com privilégios elevados.
+                  Ao continuar, aceite o prompt do Windows que será exibido.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 text-sm rounded-md bg-gray-800 border border-gray-700 hover:bg-gray-700 transition"
+                onClick={() => {
+                  setShowAdminModal(false);
+                  adminConsentResolver.current?.(false);
+                  adminConsentResolver.current = null;
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-500 transition shadow-lg shadow-blue-600/30"
+                onClick={() => {
+                  setHasAdminConsent(true);
+                  setShowAdminModal(false);
+                  adminConsentResolver.current?.(true);
+                  adminConsentResolver.current = null;
+                }}
+              >
+                Continuar e aceitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 overflow-auto">
         <div className="p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
@@ -239,35 +303,39 @@ export default function Dashboard() {
             <WarningBanner />
           </div>
 
-          {/* Console de Output */}
-          {commandOutput.length > 0 && (
-            <div className="bg-gray-950 border border-gray-800 rounded-lg p-4 animate-fade-in-up">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-green-400 font-mono">Console Output</h3>
-                <button
-                  onClick={clearOutput}
-                  className="text-xs text-gray-400 hover:text-white transition-colors"
-                >
-                  Limpar
-                </button>
-              </div>
-              <div className="bg-black rounded-md p-3 max-h-60 overflow-y-auto font-mono text-xs space-y-1">
-                {commandOutput.map((line, idx) => (
-                  <div
-                    key={idx}
-                    className={`${
-                      line.includes('[ERR]') || line.includes('[ERRO]')
-                        ? 'text-red-400'
-                        : line.includes('✓')
-                        ? 'text-green-400'
-                        : line.includes('✗')
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
+          {showConsole && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur">
+              <div className="bg-gray-950 border border-gray-800 rounded-lg shadow-2xl max-w-3xl w-full mx-4 p-4 animate-fade-in-up">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-green-400 font-mono">Console Output</h3>
+                  <button
+                    onClick={finalizeConsole}
+                    className="text-xs text-gray-400 hover:text-white transition-colors"
                   >
-                    {line}
-                  </div>
-                ))}
+                    Fechar
+                  </button>
+                </div>
+                <div className="bg-black rounded-md p-3 max-h-72 min-h-[200px] overflow-y-auto font-mono text-xs space-y-1">
+                  {commandOutput.length === 0 && (
+                    <div className="text-gray-400">Aguardando logs...</div>
+                  )}
+                  {commandOutput.map((line, idx) => (
+                    <div
+                      key={idx}
+                      className={`${
+                        line.includes('[ERR]') || line.includes('[ERRO]')
+                          ? 'text-red-400'
+                          : line.includes('✓')
+                          ? 'text-green-400'
+                          : line.includes('✗')
+                          ? 'text-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                    >
+                      {line}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
