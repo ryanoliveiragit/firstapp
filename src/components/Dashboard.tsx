@@ -73,19 +73,27 @@ export default function Dashboard() {
     setCommandOutput([]);
   };
 
+  const ensureShellPermissions = async () => {
+    const permissionResult = (await (requestPermissions as unknown as (
+      permissions: string[]
+    ) => Promise<{ status?: string }[]>)(['shell:allow-spawn', 'shell:allow-execute']));
+
+    if (!permissionResult.every(permission => permission.status === 'granted')) {
+      alert('Não foi possível obter permissão para executar comandos de shell.');
+      return false;
+    }
+
+    return true;
+  };
+
   const runBatchCommandWithOutput = async (
     resourceName: string,
     onSuccess: string,
     onError: string,
     setLoading: (value: boolean) => void
   ) => {
-    const spawnPermission = await requestPermissions('shell:allow-spawn');
-    const executePermission = await requestPermissions('shell:allow-execute');
-
-    if (spawnPermission.status !== 'granted' || executePermission.status !== 'granted') {
-      alert('Não foi possível obter permissão para executar comandos de shell.');
-      return;
-    }
+    const hasShellPermission = await ensureShellPermissions();
+    if (!hasShellPermission) return;
 
     const hasPermission = await requestAdminPermission();
     if (!hasPermission) return;
@@ -147,6 +155,9 @@ export default function Dashboard() {
   };
 
   const handleFPSBoost = async () => {
+    const hasShellPermission = await ensureShellPermissions();
+    if (!hasShellPermission) return;
+
     const hasPermission = await requestAdminPermission();
     if (!hasPermission) return;
 
