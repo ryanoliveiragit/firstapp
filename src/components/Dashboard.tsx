@@ -24,6 +24,19 @@ export default function Dashboard() {
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
   const { user } = useAuth();
 
+  const logCommandResult = (
+    label: string,
+    output: { code: number; stdout?: string; stderr?: string }
+  ) => {
+    console.info(`[Synapse] ${label} -> exit code: ${output.code}`);
+    if (output.stdout) {
+      console.info(`[Synapse] ${label} stdout: ${output.stdout}`);
+    }
+    if (output.stderr) {
+      console.info(`[Synapse] ${label} stderr: ${output.stderr}`);
+    }
+  };
+
   const buildStartProcessCommand = (filePath: string, args?: string) => {
     const sanitizedPath = filePath.replace(/'/g, "''");
     const sanitizedArgs = args ? args.replace(/'/g, "''") : undefined;
@@ -69,6 +82,7 @@ export default function Dashboard() {
         '-Command',
         command,
       ]).execute();
+      logCommandResult(resourceName, output);
 
       if (output.code === 0) {
         alert(onSuccess);
@@ -76,6 +90,7 @@ export default function Dashboard() {
         alert(`${onError}: ${output.stderr || 'Código de saída diferente de zero.'}`);
       }
     } catch (error) {
+      console.error(`[Synapse] ${resourceName} error:`, error);
       alert(`${onError}: ${error instanceof Error ? error.message : error}`);
     } finally {
       setLoading(false);
@@ -96,6 +111,7 @@ export default function Dashboard() {
         '-Command',
         command,
       ]).execute();
+      logCommandResult('fps-boost.reg', output);
 
       if (output.code === 0) {
         alert('✓ FPS Boost aplicado com sucesso!');
@@ -103,6 +119,7 @@ export default function Dashboard() {
         alert(`✗ Erro ao aplicar FPS Boost: ${output.stderr || 'Código de saída diferente de zero.'}`);
       }
     } catch (error) {
+      console.error('[Synapse] fps-boost.reg error:', error);
       alert(`✗ Erro: ${error}`);
     } finally {
       setIsApplyingFPS(false);
