@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, Sparkles } from 'lucide-react';
 
 interface MaintenanceCardProps {
   isExecuting: boolean;
@@ -15,19 +15,25 @@ const maintenanceTasks = [
 
 export function MaintenanceCard({ isExecuting, onExecute }: MaintenanceCardProps) {
   return (
-    <Card className="card-hover animate-scale-in h-full flex flex-col">
+    <Card className="card-hover animate-scale-in h-full flex flex-col glass-panel glass-card">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110">
-            x
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110 border border-white/10">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Limpeza Rápida</CardTitle>
+              <CardDescription>Remove arquivos temporários e cache</CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg">Limpeza Rápida</CardTitle>
-            <CardDescription>Remove arquivos temporários e cache</CardDescription>
+          <div className="glow-pill">
+            <span className="glow-dot" />
+            <span className="text-[11px] text-muted-foreground">Higienização</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col">
+      <CardContent className="space-y-5 flex-1 flex flex-col">
         <ul className="space-y-2">
           {maintenanceTasks.map((task, index) => (
             <li
@@ -40,7 +46,14 @@ export function MaintenanceCard({ isExecuting, onExecute }: MaintenanceCardProps
             </li>
           ))}
         </ul>
-        <Button onClick={onExecute} disabled={isExecuting} className="w-full button-hover" size="lg">
+        <div className="flex items-center justify-between text-xs text-muted-foreground border border-white/5 rounded-lg px-3 py-2">
+          <span className="flex items-center gap-2">
+            <span className="glow-dot" />
+            Libera espaço e cache
+          </span>
+          <span className="text-foreground/80">~30s</span>
+        </div>
+        <Button onClick={onExecute} disabled={isExecuting} className="w-full button-hover button-shine bg-primary/90 text-primary-foreground" size="lg">
           {isExecuting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

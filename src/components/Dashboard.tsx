@@ -253,17 +253,21 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-600/10 overflow-hidden">
+    <div className="app-shell">
+      <div className="grid-overlay" />
+      <div className="glow-orb bg-primary/25 -left-20 top-10 w-72 h-72 rounded-full floating" />
+      <div className="glow-orb bg-foreground/10 -right-24 bottom-10 w-80 h-80 rounded-full floating" />
+
       {showAdminModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
-          <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4 text-white">
+          <div className="glass-panel rounded-2xl max-w-md w-full mx-4 p-6 space-y-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600/20 text-blue-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <span className="text-xl">!</span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Permissão de Administrador</h3>
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Precisamos da sua autorização para executar otimizações com privilégios elevados.
                   Ao continuar, aceite o prompt do Windows que será exibido.
                 </p>
@@ -271,7 +275,7 @@ export default function Dashboard() {
             </div>
             <div className="flex gap-3 justify-end">
               <button
-                className="px-4 py-2 text-sm rounded-md bg-gray-800 border border-gray-700 hover:bg-gray-700 transition"
+                className="px-4 py-2 text-sm rounded-md border border-white/10 hover:border-white/20 transition-colors"
                 onClick={() => {
                   setShowAdminModal(false);
                   adminConsentResolver.current?.(false);
@@ -281,7 +285,7 @@ export default function Dashboard() {
                 Cancelar
               </button>
               <button
-                className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-500 transition shadow-lg shadow-blue-600/30"
+                className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:brightness-110 transition-all shadow-lg shadow-primary/30"
                 onClick={() => {
                   setHasAdminConsent(true);
                   setShowAdminModal(false);
@@ -295,86 +299,94 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
-          <div className="animate-fade-in-up flex flex-col gap-4">
-            <DashboardHeader activeTab={activeTab} user={user} />
-            <WarningBanner />
-          </div>
+      <div className="relative flex h-screen">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="relative flex-1 overflow-auto">
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <div className="p-6 lg:p-10 space-y-6 relative z-10 max-w-7xl mx-auto">
+            <div className="animate-fade-in-up flex flex-col gap-4">
+              <DashboardHeader activeTab={activeTab} user={user} />
+              <WarningBanner />
+            </div>
 
-          {showConsole && (
-            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur">
-              <div className="bg-gray-950 border border-gray-800 rounded-lg shadow-2xl max-w-3xl w-full mx-4 p-4 animate-fade-in-up">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-green-400 font-mono">Console Output</h3>
-                  <button
-                    onClick={finalizeConsole}
-                    className="text-xs text-gray-400 hover:text-white transition-colors"
-                  >
-                    Fechar
-                  </button>
-                </div>
-                <div className="bg-black rounded-md p-3 max-h-72 min-h-[200px] overflow-y-auto font-mono text-xs space-y-1">
-                  {commandOutput.length === 0 && (
-                    <div className="text-gray-400">Aguardando logs...</div>
-                  )}
-                  {commandOutput.map((line, idx) => (
-                    <div
-                      key={idx}
-                      className={`${
-                        line.includes('[ERR]') || line.includes('[ERRO]')
-                          ? 'text-red-400'
-                          : line.includes('✓')
-                          ? 'text-green-400'
-                          : line.includes('✗')
-                          ? 'text-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                    >
-                      {line}
+            {showConsole && (
+              <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur">
+                <div className="console-surface rounded-2xl max-w-3xl w-full mx-4 p-5 animate-fade-in-up">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="glow-dot" />
+                      <h3 className="text-sm font-semibold text-green-400 font-mono">
+                        Console Output
+                      </h3>
                     </div>
-                  ))}
+                    <button
+                      onClick={finalizeConsole}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                  <div className="bg-black/60 border border-white/5 rounded-lg p-3 max-h-72 min-h-[220px] overflow-y-auto font-mono text-xs space-y-1">
+                    {commandOutput.length === 0 && (
+                      <div className="text-muted-foreground">Aguardando logs...</div>
+                    )}
+                    {commandOutput.map((line, idx) => (
+                      <div
+                        key={idx}
+                        className={`${
+                          line.includes('[ERR]') || line.includes('[ERRO]')
+                            ? 'text-red-400'
+                            : line.includes('✓')
+                            ? 'text-green-400'
+                            : line.includes('✗')
+                            ? 'text-yellow-300'
+                            : 'text-gray-200'
+                        }`}
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 'regedits' && (
-            <div className="max-w-lg space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
-            </div>
-          )}
+            {activeTab === 'regedits' && (
+              <div className="max-w-2xl space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
+              </div>
+            )}
 
-          {activeTab === 'exec' && (
-            <div
-              className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
-              style={{ animationDelay: '100ms' }}
-            >
-              <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
-              <PerformanceOptimizerCard isExecuting={isOptimizingPerformance} onExecute={handlePerformanceOptimization} />
-              <NetworkOptimizerCard isExecuting={isOptimizingNetwork} onExecute={handleNetworkOptimization} />
-              <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
-            </div>
-          )}
+            {activeTab === 'exec' && (
+              <div
+                className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
+                style={{ animationDelay: '100ms' }}
+              >
+                <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
+                <PerformanceOptimizerCard isExecuting={isOptimizingPerformance} onExecute={handlePerformanceOptimization} />
+                <NetworkOptimizerCard isExecuting={isOptimizingNetwork} onExecute={handleNetworkOptimization} />
+                <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
+              </div>
+            )}
 
-          {activeTab === 'status' && (
-            <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <StatusPanel />
-            </div>
-          )}
+            {activeTab === 'status' && (
+              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <StatusPanel />
+              </div>
+            )}
 
-          {activeTab === 'config' && (
-            <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <SettingsPanel />
-            </div>
-          )}
+            {activeTab === 'config' && (
+              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <SettingsPanel />
+              </div>
+            )}
 
-          {activeTab === 'profile' && (
-            <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <ProfilePanel user={user} />
-            </div>
-          )}
+            {activeTab === 'profile' && (
+              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <ProfilePanel user={user} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

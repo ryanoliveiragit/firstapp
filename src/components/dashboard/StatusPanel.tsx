@@ -225,7 +225,7 @@ export function StatusPanel() {
 
       {/* Windows Info */}
       {osInfo.name && (
-        <Card className="card-hover animate-fade-in">
+        <Card className="card-hover animate-fade-in glass-panel glass-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center border border-blue-500/20">
@@ -246,7 +246,7 @@ export function StatusPanel() {
 
       {/* Main Stats */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in">
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in glass-panel glass-card">
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center border border-blue-500/20">
@@ -272,7 +272,7 @@ export function StatusPanel() {
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in" style={{ animationDelay: '100ms' }}>
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in glass-panel glass-card" style={{ animationDelay: '100ms' }}>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center border border-orange-500/20">
@@ -296,7 +296,7 @@ export function StatusPanel() {
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in md:col-span-2 lg:col-span-1" style={{ animationDelay: '200ms' }}>
+        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in md:col-span-2 lg:col-span-1 glass-panel glass-card" style={{ animationDelay: '200ms' }}>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center border border-purple-500/20">
@@ -322,7 +322,7 @@ export function StatusPanel() {
       </div>
 
       {/* Historical Graph */}
-      <Card className="animate-fade-in" style={{ animationDelay: '300ms' }}>
+      <Card className="animate-fade-in glass-panel glass-card" style={{ animationDelay: '300ms' }}>
         <CardContent className="p-6">
           <h3 className="font-semibold mb-4">Histórico de Uso</h3>
           <div className="grid gap-6 md:grid-cols-3">
@@ -335,7 +335,7 @@ export function StatusPanel() {
 
       {/* Disk Information */}
       {disks.length > 0 && (
-        <Card className="animate-fade-in" style={{ animationDelay: '400ms' }}>
+        <Card className="animate-fade-in glass-panel glass-card" style={{ animationDelay: '400ms' }}>
           <CardContent className="p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <HardDrive className="w-4 h-4" />
@@ -371,7 +371,7 @@ export function StatusPanel() {
       )}
 
       {/* Summary Panel */}
-      <Card className="animate-fade-in" style={{ animationDelay: '500ms' }}>
+      <Card className="animate-fade-in glass-panel glass-card" style={{ animationDelay: '500ms' }}>
         <CardContent className="p-6">
           <h3 className="font-semibold mb-4">Resumo do Sistema</h3>
           <div className="space-y-4">

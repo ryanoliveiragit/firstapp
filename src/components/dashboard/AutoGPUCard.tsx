@@ -16,19 +16,25 @@ const features = [
 
 export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
   return (
-    <Card className="card-hover animate-scale-in">
+    <Card className="card-hover animate-scale-in glass-panel glass-card h-full flex flex-col">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110">
-            <Gpu className="w-5 h-5" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110 border border-white/10">
+              <Gpu className="w-5 h-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">GPU Config</CardTitle>
+              <CardDescription>Configuração automática para Nvidia e AMD</CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg">GPU Config</CardTitle>
-            <CardDescription>Configuração automática para Nvidia e AMD</CardDescription>
+          <div className="glow-pill">
+            <span className="glow-dot" />
+            <span className="text-[11px] text-muted-foreground">Auto-detect</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 flex-1 flex flex-col">
         <ul className="space-y-2">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
@@ -37,10 +43,17 @@ export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
             </li>
           ))}
         </ul>
+        <div className="flex items-center justify-between text-xs text-muted-foreground border border-white/5 rounded-lg px-3 py-2">
+          <span className="flex items-center gap-2">
+            <span className="glow-dot" />
+            Perfil alto desempenho
+          </span>
+          <span className="text-foreground/80">~20s</span>
+        </div>
         <Button
           onClick={onExecute}
           disabled={isExecuting}
-          className="w-full button-hover"
+          className="w-full button-hover button-shine bg-primary/90 text-primary-foreground"
           size="lg"
         >
           {isExecuting ? (

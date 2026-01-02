@@ -32,7 +32,7 @@ export function SettingsPanel() {
       </div>
 
       <Card
-        className="card-hover animate-scale-in"
+        className="card-hover animate-scale-in glass-panel glass-card"
         style={{ animationDelay: "100ms" }}
       >
         <CardContent className="p-6 space-y-6">
