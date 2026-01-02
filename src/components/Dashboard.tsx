@@ -93,8 +93,9 @@ export default function Dashboard() {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       addOutput(`[EXCEÇÃO] Falha ao solicitar permissões de shell: ${message}`);
-      alert(`Não foi possível solicitar permissões de shell: ${message}`);
-      return false;
+      alert(`Não foi possível solicitar permissões de shell: ${message}. Vamos continuar e tentar executar mesmo assim.`);
+      setHasShellPermissions(true);
+      return true;
     }
   };
 
