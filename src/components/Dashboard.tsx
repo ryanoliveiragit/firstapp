@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from './Sidebar';
 import { Command } from '@tauri-apps/plugin-shell';
@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
   const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const adminConsentResolver = useRef<((value: boolean) => void) | null>(null);
   const [commandOutput, setCommandOutput] = useState<string[]>([]);
   const { user } = useAuth();
 
@@ -48,16 +50,10 @@ export default function Dashboard() {
   const requestAdminPermission = async () => {
     if (hasAdminConsent) return true;
 
-    const confirmElevation = window.confirm(
-      'Precisamos de permissão de administrador para aplicar otimizações. Clique em OK e aceite o prompt do Windows.'
-    );
-
-    if (!confirmElevation) {
-      return false;
-    }
-
-    setHasAdminConsent(true);
-    return true;
+    return new Promise<boolean>(resolve => {
+      adminConsentResolver.current = resolve;
+      setShowAdminModal(true);
+    });
   };
 
   useEffect(() => {
@@ -251,6 +247,47 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-gray-600/10 overflow-hidden">
+      {showAdminModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4 text-white">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600/20 text-blue-400">
+                <span className="text-xl">!</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold">Permissão de Administrador</h3>
+                <p className="text-sm text-gray-300">
+                  Precisamos da sua autorização para executar otimizações com privilégios elevados.
+                  Ao continuar, aceite o prompt do Windows que será exibido.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 text-sm rounded-md bg-gray-800 border border-gray-700 hover:bg-gray-700 transition"
+                onClick={() => {
+                  setShowAdminModal(false);
+                  adminConsentResolver.current?.(false);
+                  adminConsentResolver.current = null;
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-500 transition shadow-lg shadow-blue-600/30"
+                onClick={() => {
+                  setHasAdminConsent(true);
+                  setShowAdminModal(false);
+                  adminConsentResolver.current?.(true);
+                  adminConsentResolver.current = null;
+                }}
+              >
+                Continuar e aceitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 overflow-auto">
         <div className="p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
