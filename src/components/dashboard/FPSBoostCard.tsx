@@ -5,8 +5,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Loader2, Check, Zap } from "lucide-react";
+import { useState } from "react";
 
 interface FPSBoostCardProps {
   isApplying: boolean;
@@ -20,13 +21,22 @@ const features = [
 ];
 
 export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  const handleToggle = (checked: boolean) => {
+    setIsEnabled(checked);
+    if (checked) {
+      onApply();
+    }
+  };
+
   return (
     <Card className="card-hover animate-scale-in h-full flex flex-col glass-panel glass-card">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110 border border-white/10">
-              <Zap className="w-5 h-5" />
+            <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
+              <Zap className="w-5 h-5 text-primary" />
             </div>
             <div>
               <CardTitle className="text-lg">Otimização avançada</CardTitle>
@@ -56,21 +66,19 @@ export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
           </span>
           <span className="text-foreground/80">~15s</span>
         </div>
-        <Button
-          onClick={onApply}
-          disabled={isApplying}
-          className="w-full button-hover button-shine bg-primary/90 text-primary-foreground"
-          size="lg"
-        >
-          {isApplying ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Aplicando...
-            </>
-          ) : (
-            'Executar Tweak'
-          )}
-        </Button>
+        <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+          <div className="flex items-center gap-2">
+            {isApplying && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+            <span className="text-sm font-medium">
+              {isApplying ? 'Aplicando...' : isEnabled ? 'Ativo' : 'Executar Tweak'}
+            </span>
+          </div>
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={handleToggle}
+            disabled={isApplying}
+          />
+        </div>
       </CardContent>
     </Card>
   );
