@@ -29,7 +29,8 @@ export default function Dashboard() {
     setIsExecuting(true);
     try {
       const batchPath = await resolveResource('auto-gpu-config.bat');
-      const output = await Command.create('cmd', ['/C', 'start', '""', batchPath]).execute();
+      const quotedPath = `"${batchPath}"`;
+      const output = await Command.create('cmd', ['/C', 'start', '""', quotedPath]).execute();
 
       if (output.code === 0) {
         alert('✓ GPU configurada com sucesso!');
