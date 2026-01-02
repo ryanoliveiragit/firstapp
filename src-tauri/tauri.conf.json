@@ -24,6 +24,11 @@
       "capabilities": ["default"]
     }
   },
+  "plugins": {
+    "deep-link": {
+      "schemes": ["synapse"]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
