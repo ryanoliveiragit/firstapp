@@ -22,12 +22,12 @@ cp .env.example .env
 1. Acesse https://discord.com/developers/applications
 2. Crie uma nova aplicação
 3. Vá em "OAuth2" → "Redirects"
-4. Adicione: `http://localhost:1420/callback`
+4. Adicione: `http://localhost:1420/callback.html`
 5. Copie o "CLIENT ID"
 6. Cole no arquivo `.env`:
    ```
    VITE_DISCORD_CLIENT_ID=seu_client_id_aqui
-   VITE_DISCORD_REDIRECT_URI=http://localhost:1420/callback
+   VITE_DISCORD_REDIRECT_URI=http://localhost:1420/callback.html
    ```
 
 ## 🏃 Executar
