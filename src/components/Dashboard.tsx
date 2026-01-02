@@ -14,6 +14,7 @@ import { StatusPanel } from './dashboard/StatusPanel';
 import { MaintenanceCard } from './dashboard/MaintenanceCard';
 import { NetworkOptimizerCard } from './dashboard/NetworkOptimizerCard';
 import { PerformanceOptimizerCard } from './dashboard/PerformanceOptimizerCard';
+import { OptimizationLevelBadge } from './dashboard/OptimizationLevelBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Info } from 'lucide-react';
 
@@ -503,8 +504,7 @@ export default function Dashboard() {
 
             {activeTab === 'optimizations' && (
               <div className="space-y-4">
-
-
+                <OptimizationLevelBadge level={optimizationLevel} />
                 {renderOptimizationContent()}
               </div>
             )}
