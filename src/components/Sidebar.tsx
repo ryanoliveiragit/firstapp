@@ -9,8 +9,8 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'regedits', label: 'Registry', icon: FileKey },
-  { id: 'exec', label: 'Executáveis', icon: FileCode2 },
+  { id: 'optimizations', label: 'Otimizações', icon: FileKey },
+  { id: 'utilities', label: 'Utilitários', icon: FileCode2 },
   { id: 'status', label: 'Status', icon: Activity },
   { id: 'config', label: 'Configurações', icon: Settings },
   { id: 'profile', label: 'Perfil', icon: User },

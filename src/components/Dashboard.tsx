@@ -14,9 +14,14 @@ import { StatusPanel } from './dashboard/StatusPanel';
 import { MaintenanceCard } from './dashboard/MaintenanceCard';
 import { NetworkOptimizerCard } from './dashboard/NetworkOptimizerCard';
 import { PerformanceOptimizerCard } from './dashboard/PerformanceOptimizerCard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Info } from 'lucide-react';
+
+type OptimizationLevel = 'basica' | 'intermediaria' | 'avancada';
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('regedits');
+  const [activeTab, setActiveTab] = useState('optimizations');
+  const [optimizationLevel, setOptimizationLevel] = useState<OptimizationLevel>('avancada');
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
@@ -227,10 +232,72 @@ export default function Dashboard() {
 
   const handleMaintenance = async () => {
     await runBatchCommandWithOutput(
-      'fps_extremo.bat',
-      '✓ FPS EXTREMO APLICADO COM SUCESSO!',
-      '✗ Erro',
+      'maintenance-cleanup.bat',
+      '✓ Limpeza rápida concluída!',
+      '✗ Erro ao executar limpeza',
       setIsRunningMaintenance
+    );
+  };
+
+  const handleNetworkOptimization = async () => {
+    await runBatchCommandWithOutput(
+      'network-optimizer.bat',
+      '✓ Rede otimizada com sucesso!',
+      '✗ Erro ao otimizar rede',
+      setIsOptimizingNetwork
+    );
+  };
+
+  const handlePerformanceOptimization = async () => {
+    await runBatchCommandWithOutput(
+      'performance-optimizer.bat',
+      '✓ Otimização de desempenho aplicada!',
+      '✗ Erro ao aplicar otimizações de desempenho',
+      setIsOptimizingPerformance
+    );
+  };
+
+  const renderOptimizationContent = () => {
+    if (optimizationLevel === 'avancada') {
+      return (
+        <>
+          <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 auto-rows-fr" style={{ animationDelay: '120ms' }}>
+            <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
+            <PerformanceOptimizerCard
+              isExecuting={isOptimizingPerformance}
+              onExecute={handlePerformanceOptimization}
+            />
+          </div>
+        </>
+      );
+    }
+
+    const levelLabel =
+      optimizationLevel === 'basica'
+        ? 'Básica'
+        : optimizationLevel === 'intermediaria'
+          ? 'Intermediária'
+          : 'Avançada';
+
+    return (
+      <Card className="glass-panel glass-card animate-fade-in-up" style={{ animationDelay: '120ms' }}>
+        <CardHeader className="flex flex-row items-center gap-3">
+          <div className="p-2 bg-secondary rounded-md border border-white/10">
+            <Info className="w-5 h-5" />
+          </div>
+          <div>
+            <CardTitle>Nível {levelLabel}</CardTitle>
+            <CardDescription>
+              Conteúdos deste nível estarão disponíveis em breve.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Selecione o nível <span className="text-foreground font-medium">Avançada</span> para
+          acessar as otimizações atuais (regedits e scripts .bat) enquanto os demais níveis são
+          finalizados.
+        </CardContent>
+      </Card>
     );
   };
 
@@ -335,18 +402,46 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === 'regedits' && (
-              <div className="max-w-2xl space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
+            {activeTab === 'optimizations' && (
+              <div className="space-y-4">
+                <Card className="glass-panel glass-card animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+                  <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-1">
+                      <CardTitle>Otimizações</CardTitle>
+                      <CardDescription>Selecione o nível para visualizar os ajustes disponíveis.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="optimization-level" className="text-sm text-muted-foreground">
+                        Nível
+                      </label>
+                      <select
+                        id="optimization-level"
+                        value={optimizationLevel}
+                        onChange={event => setOptimizationLevel(event.target.value as OptimizationLevel)}
+                        className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="basica">Básica</option>
+                        <option value="intermediaria">Intermediária</option>
+                        <option value="avancada">Avançada</option>
+                      </select>
+                    </div>
+                  </CardHeader>
+                </Card>
+
+                {renderOptimizationContent()}
               </div>
             )}
 
-            {activeTab === 'exec' && (
+            {activeTab === 'utilities' && (
               <div
                 className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
                 style={{ animationDelay: '100ms' }}
               >
                 <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
+                <NetworkOptimizerCard
+                  isExecuting={isOptimizingNetwork}
+                  onExecute={handleNetworkOptimization}
+                />
                 <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
               </div>
             )}

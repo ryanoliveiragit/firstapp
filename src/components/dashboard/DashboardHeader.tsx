@@ -14,13 +14,13 @@ interface DashboardHeaderProps {
 }
 
 const tabTitles = {
-  regedits: {
-    title: 'Regedits',
-    description: 'Otimizações de registro do sistema'
+  optimizations: {
+    title: 'Otimizações',
+    description: 'Selecione o nível de ajustes e aplique melhorias'
   },
-  exec: {
-    title: 'Executáveis',
-    description: 'Utilitários e ferramentas de sistema'
+  utilities: {
+    title: 'Utilitários',
+    description: 'Ferramentas adicionais para rede, GPU e manutenção'
   },
   status: {
     title: 'Status do Sistema',
