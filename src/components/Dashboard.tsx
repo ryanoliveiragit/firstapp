@@ -23,6 +23,10 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('optimizations');
   const [optimizationLevel, setOptimizationLevel] = useState<OptimizationLevel>('avancada');
   const [isFetchingOptimizations, setIsFetchingOptimizations] = useState(false);
+  const [showOptimizationModal, setShowOptimizationModal] = useState(false);
+  const [optimizationFlowStep, setOptimizationFlowStep] = useState<
+    'intro' | 'fetch' | 'found' | 'redirecting'
+  >('intro');
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
@@ -80,6 +84,8 @@ export default function Dashboard() {
     setShowConsole(false);
     clearOutput();
   };
+
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const ensureShellPermissions = async () => true;
 
@@ -303,22 +309,22 @@ export default function Dashboard() {
   };
 
   const simulateOptimizationFetch = async () => {
-    toast.message('Otimizações', {
-      description: 'Iniciando verificação das otimizações disponíveis...',
-    });
+    setShowOptimizationModal(true);
+    setOptimizationFlowStep('intro');
 
-    const fetchPromise = new Promise<OptimizationLevel>(resolve => {
-      setTimeout(() => resolve('avancada'), 1200);
-    });
+    await wait(400);
+    setOptimizationFlowStep('fetch');
 
-    const level = await toast.promise(fetchPromise, {
-      loading: 'Buscando otimizações da sua key...',
-      success: 'Otimização avançada encontrada. Redirecionando...',
-      error: 'Não foi possível localizar otimizações para esta key.',
-    });
+    await wait(1200);
+    setOptimizationFlowStep('found');
+    setOptimizationLevel('avancada');
 
-    setOptimizationLevel(level);
+    await wait(700);
+    setOptimizationFlowStep('redirecting');
+
+    await wait(500);
     setActiveTab('optimizations');
+    setShowOptimizationModal(false);
   };
 
   const handleTabChange = async (tabId: string) => {
@@ -338,6 +344,13 @@ export default function Dashboard() {
   };
 
 
+
+  const optimizationFlowSteps = [
+    { key: 'intro', label: 'Otimizações' },
+    { key: 'fetch', label: 'Buscando otimizações da sua key' },
+    { key: 'found', label: 'Otimização avançada encontrada' },
+    { key: 'redirecting', label: 'Redirecionando' },
+  ] as const;
 
   return (
     <div className="app-shell">
@@ -382,6 +395,53 @@ export default function Dashboard() {
               >
                 Continuar e aceitar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOptimizationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
+          <div className="glass-panel rounded-2xl max-w-md w-full mx-4 p-6 space-y-5 animate-fade-in-up">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <span className="text-lg">⏳</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Sincronizando otimizações</h3>
+                <p className="text-sm text-muted-foreground">
+                  Estamos buscando e aplicando automaticamente o nível avançado para sua conta.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {optimizationFlowSteps.map((step, index) => {
+                const currentIndex = optimizationFlowSteps.findIndex(
+                  flowStep => flowStep.key === optimizationFlowStep
+                );
+                const isActive = optimizationFlowStep === step.key;
+                const isDone = index < currentIndex;
+
+                return (
+                  <div
+                    key={step.key}
+                    className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${isDone ? 'bg-green-500/20 text-green-400' : 'bg-primary/10 text-primary'}`}
+                    >
+                      {isActive ? '...' : isDone ? '✓' : index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{step.label}</p>
+                      {isActive && (
+                        <p className="text-xs text-muted-foreground">Processando...</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -447,22 +507,7 @@ export default function Dashboard() {
                   <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-1">
                       <CardTitle>Otimizações</CardTitle>
-                      <CardDescription>Selecione o nível para visualizar os ajustes disponíveis.</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label htmlFor="optimization-level" className="text-sm text-muted-foreground">
-                        Nível
-                      </label>
-                      <select
-                        id="optimization-level"
-                        value={optimizationLevel}
-                        onChange={event => setOptimizationLevel(event.target.value as OptimizationLevel)}
-                        className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="basica">Básica</option>
-                        <option value="intermediaria">Intermediária</option>
-                        <option value="avancada">Avançada</option>
-                      </select>
+                      <CardDescription>O nível avançado é carregado automaticamente para sua key.</CardDescription>
                     </div>
                   </CardHeader>
                 </Card>
