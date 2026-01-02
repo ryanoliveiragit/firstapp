@@ -10,12 +10,44 @@ import { AutoGPUCard } from './dashboard/AutoGPUCard';
 import { SettingsPanel } from './dashboard/SettingsPanel';
 import { ProfilePanel } from './dashboard/ProfilePanel';
 import { StatusPanel } from './dashboard/StatusPanel';
+import { MaintenanceCard } from './dashboard/MaintenanceCard';
+import { NetworkOptimizerCard } from './dashboard/NetworkOptimizerCard';
+import { PerformanceOptimizerCard } from './dashboard/PerformanceOptimizerCard';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('regedits');
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
+  const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
+  const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
+  const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
   const { user } = useAuth();
+
+  const runBatchCommand = async (resourceName: string, onSuccess: string, onError: string, setLoading: (value: boolean) => void) => {
+    setLoading(true);
+    try {
+      const batchPath = await resolveResource(resourceName);
+      const output = await Command.create('cmd', [
+        '/C',
+        'start',
+        '',
+        'cmd.exe',
+        '/C',
+        'call',
+        batchPath,
+      ]).execute();
+
+      if (output.code === 0) {
+        alert(onSuccess);
+      } else {
+        alert(`${onError}: ${output.stderr || 'Código de saída diferente de zero.'}`);
+      }
+    } catch (error) {
+      alert(`${onError}: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFPSBoost = async () => {
     setIsApplyingFPS(true);
@@ -43,29 +75,39 @@ export default function Dashboard() {
   };
 
   const handleAutoGPU = async () => {
-    setIsExecuting(true);
-    try {
-      const batchPath = await resolveResource('auto-gpu-config.bat');
-      const output = await Command.create('cmd', [
-        '/C',
-        'start',
-        '',
-        'cmd.exe',
-        '/C',
-        'call',
-        batchPath,
-      ]).execute();
+    await runBatchCommand(
+      'auto-gpu-config.bat',
+      '✓ GPU configurada com sucesso!',
+      '✗ Erro ao configurar GPU',
+      setIsExecuting
+    );
+  };
 
-      if (output.code === 0) {
-        alert('✓ GPU configurada com sucesso!');
-      } else {
-        alert(`✗ Erro ao configurar GPU: ${output.stderr || 'Código de saída diferente de zero.'}`);
-      }
-    } catch (error) {
-      alert(`✗ Erro: ${error}`);
-    } finally {
-      setIsExecuting(false);
-    }
+  const handleMaintenance = async () => {
+    await runBatchCommand(
+      'maintenance-cleanup.bat',
+      '✓ Limpeza concluída com sucesso!',
+      '✗ Erro ao executar limpeza',
+      setIsRunningMaintenance
+    );
+  };
+
+  const handleNetworkOptimization = async () => {
+    await runBatchCommand(
+      'network-optimizer.bat',
+      '✓ Otimizações de rede aplicadas!',
+      '✗ Erro ao otimizar rede',
+      setIsOptimizingNetwork
+    );
+  };
+
+  const handlePerformanceOptimization = async () => {
+    await runBatchCommand(
+      'performance-optimizer.bat',
+      '✓ Ajustes de desempenho aplicados!',
+      '✗ Erro ao aplicar ajustes',
+      setIsOptimizingPerformance
+    );
   };
 
   return (
@@ -86,8 +128,20 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'exec' && (
-            <div className="max-w-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="grid gap-4 animate-fade-in-up md:grid-cols-2" style={{ animationDelay: '100ms' }}>
               <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
+              <PerformanceOptimizerCard
+                isExecuting={isOptimizingPerformance}
+                onExecute={handlePerformanceOptimization}
+              />
+              <NetworkOptimizerCard
+                isExecuting={isOptimizingNetwork}
+                onExecute={handleNetworkOptimization}
+              />
+              <MaintenanceCard
+                isExecuting={isRunningMaintenance}
+                onExecute={handleMaintenance}
+              />
             </div>
           )}
 

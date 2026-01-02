@@ -34,7 +34,10 @@
     ],
     "resources": [
       "auto-gpu-config.bat",
-      "fps-boost.reg"
+      "fps-boost.reg",
+      "maintenance-cleanup.bat",
+      "network-optimizer.bat",
+      "performance-optimizer.bat"
     ]
   }
 }
