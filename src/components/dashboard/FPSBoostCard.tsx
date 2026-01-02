@@ -6,7 +6,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Gauge, Loader2, Check, ArrowRight } from "lucide-react";
+import {  Loader2, Check, ArrowRight } from "lucide-react";
 
 interface FPSBoostCardProps {
   isApplying: boolean;

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, Broom } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 
 interface MaintenanceCardProps {
   isExecuting: boolean;
@@ -19,7 +19,7 @@ export function MaintenanceCard({ isExecuting, onExecute }: MaintenanceCardProps
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110">
-            <Broom className="w-5 h-5" />
+            x
           </div>
           <div>
             <CardTitle className="text-lg">Limpeza Rápida</CardTitle>

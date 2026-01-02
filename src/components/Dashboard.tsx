@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from './Sidebar';
-import { Command } from '@tauri-apps/plugin-shell';
+import { Command, Child } from '@tauri-apps/plugin-shell';
 import { resolveResource } from '@tauri-apps/api/path';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { WarningBanner } from './dashboard/WarningBanner';
@@ -22,13 +22,14 @@ export default function Dashboard() {
   const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
   const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
+  const [commandOutput, setCommandOutput] = useState<string[]>([]);
   const { user } = useAuth();
 
   const logCommandResult = (
     label: string,
-    output: { code: number; stdout?: string; stderr?: string }
+    output: { code: number | null; stdout?: string; stderr?: string }
   ) => {
-    console.info(`[Synapse] ${label} -> exit code: ${output.code}`);
+    console.info(`[Synapse] ${label} -> exit code: ${output.code ?? 'null'}`);
     if (output.stdout) {
       console.info(`[Synapse] ${label} stdout: ${output.stdout}`);
     }
@@ -63,7 +64,15 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const runBatchCommand = async (
+  const addOutput = (message: string) => {
+    setCommandOutput(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+  };
+
+  const clearOutput = () => {
+    setCommandOutput([]);
+  };
+
+  const runBatchCommandWithOutput = async (
     resourceName: string,
     onSuccess: string,
     onError: string,
@@ -73,26 +82,57 @@ export default function Dashboard() {
     if (!hasPermission) return;
 
     setLoading(true);
+    clearOutput();
+    addOutput(`Iniciando ${resourceName}...`);
+
     try {
       const batchPath = await resolveResource(resourceName);
       const command = buildStartProcessCommand(batchPath, `/C "call \\"${batchPath}\\""`);
-      const output = await Command.create('powershell-elevated', [
+      
+      const cmd = Command.create('powershell-elevated', [
         '-NoProfile',
         '-NonInteractive',
         '-Command',
         command,
-      ]).execute();
-      logCommandResult(resourceName, output);
+      ]);
 
-      if (output.code === 0) {
-        alert(onSuccess);
-      } else {
-        alert(`${onError}: ${output.stderr || 'Código de saída diferente de zero.'}`);
-      }
+      // Escuta stdout em tempo real
+      cmd.stdout.on('data', (line: string) => {
+        addOutput(`[OUT] ${line}`);
+      });
+
+      // Escuta stderr em tempo real
+      cmd.stderr.on('data', (line: string) => {
+        addOutput(`[ERR] ${line}`);
+      });
+
+      // Escuta quando o processo termina
+      cmd.on('close', (data: { code: number | null; signal: number | null }) => {
+        logCommandResult(resourceName, { code: data.code });
+        
+        if (data.code === 0) {
+          addOutput(`✓ ${onSuccess}`);
+          alert(onSuccess);
+        } else {
+          addOutput(`✗ ${onError} - Código: ${data.code}`);
+          alert(`${onError}: Código de saída ${data.code}`);
+        }
+        setLoading(false);
+      });
+
+      // Escuta erros
+      cmd.on('error', (error: string) => {
+        addOutput(`[ERRO] ${error}`);
+        alert(`${onError}: ${error}`);
+        setLoading(false);
+      });
+
+      await cmd.spawn();
     } catch (error) {
       console.error(`[Synapse] ${resourceName} error:`, error);
-      alert(`${onError}: ${error instanceof Error ? error.message : error}`);
-    } finally {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      addOutput(`[EXCEÇÃO] ${errorMsg}`);
+      alert(`${onError}: ${errorMsg}`);
       setLoading(false);
     }
   };
@@ -102,32 +142,59 @@ export default function Dashboard() {
     if (!hasPermission) return;
 
     setIsApplyingFPS(true);
+    clearOutput();
+    addOutput('Aplicando FPS Boost...');
+
     try {
       const regPath = await resolveResource('fps-boost.reg');
       const command = buildStartProcessCommand('regedit.exe', `/s \\"${regPath}\\"`);
-      const output = await Command.create('powershell-elevated', [
+      
+      const cmd = Command.create('powershell-elevated', [
         '-NoProfile',
         '-NonInteractive',
         '-Command',
         command,
-      ]).execute();
-      logCommandResult('fps-boost.reg', output);
+      ]);
 
-      if (output.code === 0) {
-        alert('✓ FPS Boost aplicado com sucesso!');
-      } else {
-        alert(`✗ Erro ao aplicar FPS Boost: ${output.stderr || 'Código de saída diferente de zero.'}`);
-      }
+      cmd.stdout.on('data', (line: string) => {
+        addOutput(`[OUT] ${line}`);
+      });
+
+      cmd.stderr.on('data', (line: string) => {
+        addOutput(`[ERR] ${line}`);
+      });
+
+      cmd.on('close', (data: { code: number | null; signal: number | null }) => {
+        logCommandResult('fps-boost.reg', { code: data.code });
+
+        if (data.code === 0) {
+          addOutput('✓ FPS Boost aplicado com sucesso!');
+          alert('✓ FPS Boost aplicado com sucesso!');
+        } else {
+          addOutput(`✗ Erro ao aplicar FPS Boost - Código: ${data.code}`);
+          alert(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
+        }
+        setIsApplyingFPS(false);
+      });
+
+      cmd.on('error', (error: string) => {
+        addOutput(`[ERRO] ${error}`);
+        alert(`✗ Erro: ${error}`);
+        setIsApplyingFPS(false);
+      });
+
+      await cmd.spawn();
     } catch (error) {
       console.error('[Synapse] fps-boost.reg error:', error);
-      alert(`✗ Erro: ${error}`);
-    } finally {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      addOutput(`[EXCEÇÃO] ${errorMsg}`);
+      alert(`✗ Erro: ${errorMsg}`);
       setIsApplyingFPS(false);
     }
   };
 
   const handleAutoGPU = async () => {
-    await runBatchCommand(
+    await runBatchCommandWithOutput(
       'auto-gpu-config.bat',
       '✓ GPU configurada com sucesso!',
       '✗ Erro ao configurar GPU',
@@ -136,7 +203,7 @@ export default function Dashboard() {
   };
 
   const handleMaintenance = async () => {
-    await runBatchCommand(
+    await runBatchCommandWithOutput(
       'maintenance-cleanup.bat',
       '✓ Limpeza concluída com sucesso!',
       '✗ Erro ao executar limpeza',
@@ -145,7 +212,7 @@ export default function Dashboard() {
   };
 
   const handleNetworkOptimization = async () => {
-    await runBatchCommand(
+    await runBatchCommandWithOutput(
       'network-optimizer.bat',
       '✓ Otimizações de rede aplicadas!',
       '✗ Erro ao otimizar rede',
@@ -154,7 +221,7 @@ export default function Dashboard() {
   };
 
   const handlePerformanceOptimization = async () => {
-    await runBatchCommand(
+    await runBatchCommandWithOutput(
       'performance-optimizer.bat',
       '✓ Ajustes de desempenho aplicados!',
       '✗ Erro ao aplicar ajustes',
@@ -166,12 +233,44 @@ export default function Dashboard() {
     <div className="flex h-screen bg-gray-600/10 overflow-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 overflow-auto">
-       
-        <div className=" p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
+        <div className="p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
           <div className="animate-fade-in-up flex flex-col gap-4">
             <DashboardHeader activeTab={activeTab} user={user} />
-             <WarningBanner />
+            <WarningBanner />
           </div>
+
+          {/* Console de Output */}
+          {commandOutput.length > 0 && (
+            <div className="bg-gray-950 border border-gray-800 rounded-lg p-4 animate-fade-in-up">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-green-400 font-mono">Console Output</h3>
+                <button
+                  onClick={clearOutput}
+                  className="text-xs text-gray-400 hover:text-white transition-colors"
+                >
+                  Limpar
+                </button>
+              </div>
+              <div className="bg-black rounded-md p-3 max-h-60 overflow-y-auto font-mono text-xs space-y-1">
+                {commandOutput.map((line, idx) => (
+                  <div
+                    key={idx}
+                    className={`${
+                      line.includes('[ERR]') || line.includes('[ERRO]')
+                        ? 'text-red-400'
+                        : line.includes('✓')
+                        ? 'text-green-400'
+                        : line.includes('✗')
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
+                    }`}
+                  >
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {activeTab === 'regedits' && (
             <div className="max-w-lg space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
