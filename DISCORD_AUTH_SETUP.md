@@ -42,7 +42,7 @@ Este projeto utiliza OAuth2 do Discord para autenticação. Siga os passos abaix
 
 3. Para build/produção:
    - Apps web: ajuste o `.env.production` para apontar para o domínio final, por exemplo `VITE_DISCORD_REDIRECT_URI=https://seu-dominio.com/callback.html` e rode `npm run build` com essa env.
-   - Apps desktop (Tauri): defina `VITE_DISCORD_REDIRECT_URI=tauri://localhost/callback.html` antes de `npm run build`/`tauri build` e cadastre a mesma URL no Discord Developer Portal.
+   - **Apps desktop (Tauri):** o Discord não aceita esquemas customizados (`tauri://`). Use um redirect HTTPS válido (ex.: `https://seu-dominio.com/callback.html`), adicione-o no Discord Developer Portal e configure a mesma URL em `VITE_DISCORD_REDIRECT_URI`. A página `callback.html` fará o redirecionamento de volta para `tauri://localhost/#...` com o token.
 
 ## 5. Executar a Aplicação
 
@@ -71,9 +71,9 @@ A autenticação usa o fluxo OAuth2 Implicit Grant:
 
 Para produção, você precisará:
 - Configurar as variáveis de ambiente no servidor
-- Atualizar a REDIRECT_URI para o domínio de produção (ou `tauri://localhost/callback.html` no caso do build desktop)
+- Atualizar a REDIRECT_URI para o domínio de produção (HTTPS que você registrou no Discord Developer Portal)
 - Adicionar a nova URL de redirect no Discord Developer Portal
 
 ## Página de callback no build
 
-O arquivo `public/callback.html` persiste o `access_token` retornado pelo Discord no `localStorage` e redireciona para `/`. Isso garante que o login funcione tanto no ambiente web quanto no executável gerado pelo Tauri (onde não há servidor rodando em `localhost:1420`). Certifique-se de que a URL configurada em `VITE_DISCORD_REDIRECT_URI` aponte para essa página.
+O arquivo `public/callback.html` persiste o `access_token` retornado pelo Discord no `localStorage` (quando servido por http/https) e redireciona para `/`. Em builds desktop, ele dá um bounce para `tauri://localhost/#...`, permitindo que o app capture o token mesmo usando um redirect HTTPS aceito pelo Discord. Certifique-se de que a URL configurada em `VITE_DISCORD_REDIRECT_URI` aponte para essa página hospedada em um domínio https válido.

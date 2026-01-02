@@ -13,8 +13,30 @@
         const params = new URLSearchParams(fragment);
         const accessToken = params.get('access_token');
 
+        const goToApp = () => {
+          const target = `tauri://localhost/#${fragment}`;
+          try {
+            window.location.replace(target);
+          } catch (err) {
+            // Fallback to href if replace isn't available
+            window.location.href = target;
+          }
+        };
+
         if (accessToken) {
-          localStorage.setItem('discord_token', accessToken);
+          // Persist token for web builds served over http/https
+          try {
+            localStorage.setItem('discord_token', accessToken);
+          } catch {
+            // ignore storage failures (e.g., blocked cookies)
+          }
+
+          // On desktop (Tauri), Discord only allows http/https redirects,
+          // so we bounce back to the app scheme with the same fragment.
+          if (window.location.protocol !== 'tauri:') {
+            goToApp();
+            return;
+          }
         }
 
         window.location.replace('/');
