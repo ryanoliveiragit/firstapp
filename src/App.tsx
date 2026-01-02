@@ -1,10 +1,11 @@
 import "./App.css";
 import { useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
+import KeyInput from "./components/KeyInput";
 import Dashboard from "./components/Dashboard";
 
 function App() {
-  const { user, isLoading } = useAuth();
+  const { user, licenseKey, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -21,11 +22,16 @@ function App() {
     );
   }
 
-  return (
-    <main className="w-full h-screen overflow-hidden">
-      {user ? <Dashboard /> : <Login />}
-    </main>
-  );
+  // Flow: No user -> Login -> KeyInput (required) -> Dashboard
+  if (!user) {
+    return <Login />;
+  }
+
+  if (!licenseKey) {
+    return <KeyInput />;
+  }
+
+  return <Dashboard />;
 }
 
 export default App;

@@ -10,8 +10,10 @@ interface DiscordUser {
 
 interface AuthContextType {
   user: DiscordUser | null;
+  licenseKey: string | null;
   login: () => void;
   logout: () => void;
+  setLicenseKey: (key: string) => void;
   isLoading: boolean;
 }
 
@@ -27,6 +29,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<DiscordUser | null>(null);
+  const [licenseKey, setLicenseKeyState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
@@ -35,8 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
     const savedUser = localStorage.getItem('discord_user');
+    const savedKey = localStorage.getItem('license_key');
+
     if (savedUser) {
       setUser(JSON.parse(savedUser));
+    }
+    if (savedKey) {
+      setLicenseKeyState(savedKey);
     }
     setIsLoading(false);
 
@@ -83,12 +91,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
+    setLicenseKeyState(null);
     localStorage.removeItem('discord_user');
     localStorage.removeItem('discord_token');
+    localStorage.removeItem('license_key');
+  };
+
+  const setLicenseKey = (key: string) => {
+    setLicenseKeyState(key);
+    localStorage.setItem('license_key', key);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, licenseKey, login, logout, setLicenseKey, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
