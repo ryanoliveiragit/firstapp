@@ -21,6 +21,18 @@
             "call",
             { "validator": "^.+$" }
           ]
+        },
+        {
+          "name": "cmd",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            "start",
+            "",
+            "regedit.exe",
+            "/s",
+            { "validator": "^.+\\.reg$" }
+          ]
         }
       ]
     }
