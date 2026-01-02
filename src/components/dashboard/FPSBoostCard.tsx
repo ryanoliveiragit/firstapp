@@ -21,21 +21,27 @@ const features = [
 
 export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
   return (
-    <Card className="card-hover animate-scale-in">
+    <Card className="card-hover animate-scale-in glass-panel glass-card overflow-hidden">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-md transition-transform duration-300 hover:scale-110">
-            <img className="w-12 h-12" src="/icons/rocket.gif" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-md transition-transform duration-300 hover:scale-110 bg-primary/5 border border-primary/20">
+              <img className="w-12 h-12" src="/icons/rocket.gif" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">FPS Boost</CardTitle>
+              <CardDescription className="text-white/70 font-normal">
+                Otimizações de registro para aumentar FPS
+              </CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg">FPS Boost</CardTitle>
-            <CardDescription className="text-white/70 font-normal">
-              Otimizações de registro para aumentar FPS
-            </CardDescription>
+          <div className="glow-pill">
+            <span className="glow-dot" />
+            <span className="text-[11px] text-muted-foreground">Registro seguro</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <ul className="space-y-2">
           {features.map((feature, index) => (
             <li
@@ -48,10 +54,17 @@ export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
             </li>
           ))}
         </ul>
+        <div className="flex items-center justify-between text-xs text-muted-foreground border border-white/5 rounded-lg px-3 py-2">
+          <span className="flex items-center gap-2">
+            <span className="glow-dot" />
+            Scripts verificados e assinados
+          </span>
+          <span className="text-foreground/80">~15s</span>
+        </div>
         <Button
           onClick={onApply}
           disabled={isApplying}
-          className="w-full bg-primary group"
+          className="w-full bg-primary text-primary-foreground group button-shine"
           variant="ghost"
           size="lg"
         >

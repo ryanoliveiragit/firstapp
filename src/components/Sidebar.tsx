@@ -21,15 +21,12 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <div className="w-64 h-screen border-r border-white/30 flex flex-col animate-slide-in-left">
- 
-       <img 
-    src='/gradient-1.png' 
-    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
-  />
-      <div className="p-4">
+    <div className="relative w-64 h-screen border-r border-white/10 glass-panel flex flex-col animate-slide-in-left overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/0 pointer-events-none" />
+      <div className="absolute inset-0 grid-overlay opacity-50" />
+      <div className="p-5 pb-4 relative z-10">
         <div className="flex items-center gap-3 animate-fade-in-up">
-          <div className="w-8 h-8 bg-foreground dark:bg-transparent rounded-md flex items-center justify-center overflow-hidden hover:scale-110 transition-transform duration-300">
+          <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center overflow-hidden hover:scale-105 transition-transform duration-300">
             {!logoError ? (
               <img
                 src="/logo.png"
@@ -38,17 +35,17 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                 onError={() => setLogoError(true)}
               />
             ) : (
-              <Zap className="w-5 h-5 text-background" strokeWidth={2.5} />
+              <Zap className="w-5 h-5 text-primary" strokeWidth={2.5} />
             )}
           </div>
           <div>
-            <h1 className="text-lg font-medium">synapse</h1>
-            <p className="text-xs text-muted-foreground">Performance</p>
+            <h1 className="text-base font-semibold tracking-tight">synapse</h1>
+            <p className="text-xs text-muted-foreground">Performance Suite</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 p-3 space-y-1 relative z-10">
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -58,25 +55,29 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium animate-fade-in-up hover:scale-[1.02]",
+                "group w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium animate-fade-in-up button-shine",
                 isActive
-                  ? "border bg-white/10  border-[#6c6d6e] text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  ? "border border-primary/30 bg-white/10 text-foreground shadow-[0_10px_40px_-25px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5 hover:border hover:border-white/10"
               )}
               style={{ animationDelay: `${index * 50}ms` }}
             >
+              <span className="w-2 h-2 rounded-full bg-primary/60 shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
               <Icon className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
-              <span>{item.label}</span>
+              <span className="flex-1 text-left">{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="p-3 border-t border-white/30 animate-fade-in" style={{ animationDelay: '300ms' }}>
-        
+      <div className="p-4 border-t border-white/10 relative z-10 animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <div className="glow-pill mb-3">
+          <span className="glow-dot" />
+          <span className="text-[11px] text-muted-foreground">Sessão segura</span>
+        </div>
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200 hover:scale-[1.02]"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200 hover:scale-[1.02]"
         >
           <LogOut className="w-4 h-4" strokeWidth={2} />
           <span>Sair</span>

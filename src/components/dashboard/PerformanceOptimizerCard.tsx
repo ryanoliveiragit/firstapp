@@ -15,19 +15,25 @@ const tweaks = [
 
 export function PerformanceOptimizerCard({ isExecuting, onExecute }: PerformanceOptimizerCardProps) {
   return (
-    <Card className="card-hover animate-scale-in h-full flex flex-col">
+    <Card className="card-hover animate-scale-in h-full flex flex-col glass-panel glass-card">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110">
-            <Rocket className="w-5 h-5" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110 border border-white/10">
+              <Rocket className="w-5 h-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Desempenho</CardTitle>
+              <CardDescription>Plano de energia e recursos gráficos</CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg">Desempenho</CardTitle>
-            <CardDescription>Plano de energia e recursos gráficos</CardDescription>
+          <div className="glow-pill">
+            <span className="glow-dot" />
+            <span className="text-[11px] text-muted-foreground">Boost</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col">
+      <CardContent className="space-y-5 flex-1 flex flex-col">
         <ul className="space-y-2">
           {tweaks.map((item, index) => (
             <li
@@ -40,7 +46,14 @@ export function PerformanceOptimizerCard({ isExecuting, onExecute }: Performance
             </li>
           ))}
         </ul>
-        <Button onClick={onExecute} disabled={isExecuting} className="w-full button-hover" size="lg">
+        <div className="flex items-center justify-between text-xs text-muted-foreground border border-white/5 rounded-lg px-3 py-2">
+          <span className="flex items-center gap-2">
+            <span className="glow-dot" />
+            Sem reinício necessário
+          </span>
+          <span className="text-foreground/80">~25s</span>
+        </div>
+        <Button onClick={onExecute} disabled={isExecuting} className="w-full button-hover button-shine bg-primary/90 text-primary-foreground" size="lg">
           {isExecuting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
