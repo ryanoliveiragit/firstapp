@@ -41,13 +41,16 @@ export function DashboardHeader({ activeTab, user }: DashboardHeaderProps) {
 
   return (
     <div className="glass-panel rounded-2xl p-5 md:p-6 overflow-hidden relative">
-      <div className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+      <div className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-primary/65 to-transparent" />
       <div className="flex items-start justify-between gap-4 flex-wrap relative z-10">
         <div className="space-y-2">
           <div className="glow-pill w-fit">
-            <span className="glow-dot" />
-            <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
-              Painel {currentTab?.title}
+           <span className="relative inline-flex">
+  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+</span>
+            <span className="text-[11px] tracking-[0.08em] text-green-500">
+              Sua sessão esta ativa
             </span>
           </div>
           <div>

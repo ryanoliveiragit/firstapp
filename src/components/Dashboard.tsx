@@ -22,6 +22,11 @@ type OptimizationLevel = 'basica' | 'intermediaria' | 'avancada';
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('optimizations');
   const [optimizationLevel, setOptimizationLevel] = useState<OptimizationLevel>('avancada');
+  const [isFetchingOptimizations, setIsFetchingOptimizations] = useState(false);
+  const [showOptimizationModal, setShowOptimizationModal] = useState(false);
+  const [optimizationFlowStep, setOptimizationFlowStep] = useState<
+    'intro' | 'fetch' | 'found' | 'redirecting'
+  >('intro');
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
@@ -79,6 +84,8 @@ export default function Dashboard() {
     setShowConsole(false);
     clearOutput();
   };
+
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const ensureShellPermissions = async () => true;
 
@@ -301,7 +308,49 @@ export default function Dashboard() {
     );
   };
 
+  const simulateOptimizationFetch = async () => {
+    setShowOptimizationModal(true);
+    setOptimizationFlowStep('intro');
 
+    await wait(400);
+    setOptimizationFlowStep('fetch');
+
+    await wait(1200);
+    setOptimizationFlowStep('found');
+    setOptimizationLevel('avancada');
+
+    await wait(700);
+    setOptimizationFlowStep('redirecting');
+
+    await wait(500);
+    setActiveTab('optimizations');
+    setShowOptimizationModal(false);
+  };
+
+  const handleTabChange = async (tabId: string) => {
+    if (tabId === 'optimizations') {
+      if (isFetchingOptimizations) return;
+
+      try {
+        setIsFetchingOptimizations(true);
+        await simulateOptimizationFetch();
+      } finally {
+        setIsFetchingOptimizations(false);
+      }
+      return;
+    }
+
+    setActiveTab(tabId);
+  };
+
+
+
+  const optimizationFlowSteps = [
+    { key: 'intro', label: 'Otimizações' },
+    { key: 'fetch', label: 'Buscando otimizações da sua key' },
+    { key: 'found', label: 'Otimização avançada encontrada' },
+    { key: 'redirecting', label: 'Redirecionando' },
+  ] as const;
 
   return (
     <div className="app-shell">
@@ -350,8 +399,59 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {showOptimizationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
+          <div className="glass-panel rounded-2xl max-w-md w-full mx-4 p-6 space-y-5 animate-fade-in-up">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <span className="text-lg">⏳</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Sincronizando otimizações</h3>
+                <p className="text-sm text-muted-foreground">
+                  Estamos buscando e aplicando automaticamente o nível avançado para sua conta.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {optimizationFlowSteps.map((step, index) => {
+                const currentIndex = optimizationFlowSteps.findIndex(
+                  flowStep => flowStep.key === optimizationFlowStep
+                );
+                const isActive = optimizationFlowStep === step.key;
+                const isDone = index < currentIndex;
+
+                return (
+                  <div
+                    key={step.key}
+                    className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${isDone ? 'bg-green-500/20 text-green-400' : 'bg-primary/10 text-primary'}`}
+                    >
+                      {isActive ? '...' : isDone ? '✓' : index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{step.label}</p>
+                      {isActive && (
+                        <p className="text-xs text-muted-foreground">Processando...</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="relative flex h-screen">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          isOptimizationsLoading={isFetchingOptimizations}
+        />
         <div className="relative flex-1 overflow-auto">
           <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="p-6 lg:p-10 space-y-6 relative z-10 max-w-7xl mx-auto">
@@ -403,29 +503,7 @@ export default function Dashboard() {
 
             {activeTab === 'optimizations' && (
               <div className="space-y-4">
-                <Card className="glass-panel glass-card animate-fade-in-up" style={{ animationDelay: '50ms' }}>
-                  <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-1">
-                      <CardTitle>Otimizações</CardTitle>
-                      <CardDescription>Selecione o nível para visualizar os ajustes disponíveis.</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label htmlFor="optimization-level" className="text-sm text-muted-foreground">
-                        Nível
-                      </label>
-                      <select
-                        id="optimization-level"
-                        value={optimizationLevel}
-                        onChange={event => setOptimizationLevel(event.target.value as OptimizationLevel)}
-                        className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="basica">Básica</option>
-                        <option value="intermediaria">Intermediária</option>
-                        <option value="avancada">Avançada</option>
-                      </select>
-                    </div>
-                  </CardHeader>
-                </Card>
+
 
                 {renderOptimizationContent()}
               </div>
