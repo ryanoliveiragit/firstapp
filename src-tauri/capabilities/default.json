@@ -10,8 +10,8 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "program": "cmd",
-          "sidecar": false,
+          "name": "cmd-start-call",
+          "cmd": "cmd",
           "args": [
             "/C",
             "start",
@@ -23,16 +23,16 @@
           ]
         },
         {
-          "program": "regedit.exe",
-          "sidecar": false,
+          "name": "regedit-exe",
+          "cmd": "regedit.exe",
           "args": [
             "/s",
             { "validator": "^.+\\.reg$" }
           ]
         },
         {
-          "program": "regedit",
-          "sidecar": false,
+          "name": "regedit",
+          "cmd": "regedit",
           "args": [
             "/s",
             { "validator": "^.+\\.reg$" }
