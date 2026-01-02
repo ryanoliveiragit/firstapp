@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from './Sidebar';
-import { Command, Child } from '@tauri-apps/plugin-shell';
+import { Command } from '@tauri-apps/plugin-shell';
 import { resolveResource } from '@tauri-apps/api/path';
+import { requestPermissions } from '@tauri-apps/api/core';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { WarningBanner } from './dashboard/WarningBanner';
 import { FPSBoostCard } from './dashboard/FPSBoostCard';
@@ -78,6 +79,14 @@ export default function Dashboard() {
     onError: string,
     setLoading: (value: boolean) => void
   ) => {
+    const spawnPermission = await requestPermissions('shell:allow-spawn');
+    const executePermission = await requestPermissions('shell:allow-execute');
+
+    if (spawnPermission.status !== 'granted' || executePermission.status !== 'granted') {
+      alert('Não foi possível obter permissão para executar comandos de shell.');
+      return;
+    }
+
     const hasPermission = await requestAdminPermission();
     if (!hasPermission) return;
 
