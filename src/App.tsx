@@ -3,6 +3,7 @@ import { useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import KeyInput from "./components/KeyInput";
 import Dashboard from "./components/Dashboard";
+import { Toaster } from "sonner";
 
 function App() {
   const { user, licenseKey, isLoading } = useAuth();
@@ -24,14 +25,29 @@ function App() {
 
   // Flow: No user -> Login -> KeyInput (required) -> Dashboard
   if (!user) {
-    return <Login />;
+    return (
+      <>
+        <Toaster position="top-right" richColors closeButton />
+        <Login />
+      </>
+    );
   }
 
   if (!licenseKey) {
-    return <KeyInput />;
+    return (
+      <>
+        <Toaster position="top-right" richColors closeButton />
+        <KeyInput />
+      </>
+    );
   }
 
-  return <Dashboard />;
+  return (
+    <>
+      <Toaster position="top-right" richColors closeButton />
+      <Dashboard />
+    </>
+  );
 }
 
 export default App;

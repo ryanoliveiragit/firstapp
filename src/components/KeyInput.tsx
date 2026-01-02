@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Key, AlertCircle, Loader2, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
+
+const VALID_KEY = '123123123123';
 
 const KeyInput = () => {
   const { user, setLicenseKey, logout } = useAuth();
@@ -21,19 +24,46 @@ const KeyInput = () => {
 
     if (!key.trim()) {
       setError('Por favor, insira uma key válida');
+      toast.error('Campo vazio', {
+        description: 'Por favor, insira uma chave de licença'
+      });
       return;
     }
 
-    if (key.length < 16) {
-      setError('Key inválida. Mínimo de 16 caracteres');
+    // Remove hífens para validação
+    const cleanKey = key.replace(/-/g, '');
+
+    if (cleanKey.length < 12) {
+      setError('Key muito curta');
+      toast.error('Chave inválida', {
+        description: 'A chave deve ter pelo menos 12 caracteres'
+      });
       return;
     }
 
     setIsValidating(true);
+    toast.loading('Validando chave de licença...', {
+      id: 'validating-key'
+    });
 
+    // Simular validação com delay
     setTimeout(() => {
-      setLicenseKey(key);
-      setIsValidating(false);
+      // Validação: apenas a chave "123123123123" é válida
+      if (cleanKey === VALID_KEY) {
+        setLicenseKey(key);
+        toast.success('Licença ativada com sucesso!', {
+          id: 'validating-key',
+          description: 'Bem-vindo ao Paragon Tweaking Utility'
+        });
+        setIsValidating(false);
+      } else {
+        setError('Chave de licença inválida');
+        toast.error('Chave inválida', {
+          id: 'validating-key',
+          description: 'A chave inserida não é válida. Verifique e tente novamente.'
+        });
+        setIsValidating(false);
+      }
     }, 1500);
   };
 

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Loader2, Users, Server } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   const { login } = useAuth();
@@ -20,9 +21,15 @@ const Login = () => {
 
   const handleDiscordLogin = async () => {
     setDiscordLoading(true);
+    toast.info('Redirecionando para Discord...', {
+      description: 'Você será redirecionado para fazer login'
+    });
     try {
       await login();
-    } finally {
+    } catch (error) {
+      toast.error('Erro ao fazer login', {
+        description: 'Ocorreu um erro ao tentar fazer login com Discord'
+      });
       setDiscordLoading(false);
     }
   };
