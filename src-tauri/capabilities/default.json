@@ -10,8 +10,8 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "name": "cmd",
-          "cmd": "cmd",
+          "program": "cmd",
+          "sidecar": false,
           "args": [
             "/C",
             "start",
@@ -23,8 +23,8 @@
           ]
         },
         {
-          "name": "cmd",
-          "cmd": "cmd",
+          "program": "cmd",
+          "sidecar": false,
           "args": [
             "/C",
             "start",
