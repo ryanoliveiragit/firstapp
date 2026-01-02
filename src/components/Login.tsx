@@ -2,15 +2,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CircleUserRound } from "lucide-react";
-import { Loader2, TrendingUp, Users, Server } from "lucide-react";
-
-type LoginState = "idle" | "loading" | "success" | "error";
+import { ArrowRight } from "lucide-react";
+import { Loader2, Users, Server } from "lucide-react";
 
 const Login = () => {
   const { login } = useAuth();
   const [discordLoading, setDiscordLoading] = useState(false);
-  const [state, setState] = useState<LoginState>("idle");
   const [scanLinePosition, setScanLinePosition] = useState(0);
 
   // Scanning animation effect
@@ -47,7 +44,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      {/* Animated grid background */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -61,22 +57,18 @@ const Login = () => {
         />
       </div>
 
-      {/* Scanning line effect */}
       <div
         className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-20 transition-all duration-75 pointer-events-none z-50"
         style={{ top: `${scanLinePosition}%` }}
       />
 
-      {/* Glow accents */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
 
       <main className="relative z-10 flex items-center justify-center min-h-screen px-12 py-12">
         <div className="w-full max-w-6xl">
           <div className="grid lg:grid-cols-[1.2fr,1fr] gap-16 items-center">
-            {/* Left side - Hero */}
             <div className="space-y-12 animate-fade-in">
-              {/* Logo/Brand */}
               <div className="space-y-6">
                 <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full  bg-green-500/10 backdrop-blur-sm">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -101,7 +93,6 @@ const Login = () => {
               </div>
               <div className="flex items-center gap-6 pt-4 flex-wrap">
                 {stats.map((stat, idx) => {
-                  const Icon = stat.icon;
                   return (
                     <div key={idx} className="flex items-center gap-3">
                       <div
