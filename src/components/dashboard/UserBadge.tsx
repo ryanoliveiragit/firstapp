@@ -1,0 +1,31 @@
+interface User {
+  id: string;
+  username: string;
+  avatar?: string;
+  discriminator?: string;
+  email?: string;
+}
+
+interface UserBadgeProps {
+  user: User | null;
+}
+
+export function UserBadge({ user }: UserBadgeProps) {
+  const avatarUrl = user?.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+    : `https://cdn.discordapp.com/embed/avatars/${user?.discriminator ? parseInt(user.discriminator) % 5 : 0}.png`;
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg">
+      <img
+        src={avatarUrl}
+        alt="User avatar"
+        className="w-8 h-8 rounded-full border-2 border-primary/50"
+      />
+      <div className="hidden sm:block">
+        <p className="text-xs font-medium leading-none">{user?.username}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Admin</p>
+      </div>
+    </div>
+  );
+}

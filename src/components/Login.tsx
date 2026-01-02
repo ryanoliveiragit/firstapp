@@ -11,7 +11,6 @@ const Login = () => {
   const [discordLoading, setDiscordLoading] = useState(false);
   const [scanLinePosition, setScanLinePosition] = useState(0);
 
-  // Scanning animation effect
   useEffect(() => {
     const interval = setInterval(() => {
       setScanLinePosition((prev) => (prev + 1) % 100);
@@ -134,10 +133,8 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Right side - Login Card */}
             <div className="w-full max-w-md relative z-10">
               <Card className="border-border bg-card/95 backdrop-blur-xl shadow-2xl">
-                {/* Top accent */}
                 <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
 
                 <CardHeader className="text-center space-y-2 pt-8 pb-6">
@@ -175,7 +172,6 @@ const Login = () => {
                     )}
                   </Button>
 
-                  {/* Additional info */}
                   <div className="mt-6 text-center">
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       Ao continuar, você concorda com os{" "}
@@ -187,7 +183,6 @@ const Login = () => {
                 </CardContent>
               </Card>
 
-              {/* Footer */}
               <div className="mt-8 text-center">
                 <p className="text-xs text-muted-foreground">
                   © 2026 Paragon Tweaking Utility · v1.4.6

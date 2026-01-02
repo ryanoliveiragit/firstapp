@@ -19,10 +19,8 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
   return (
     <div className="w-64 h-screen bg-card border-r border-border flex flex-col relative overflow-hidden">
-      {/* Background gradient effect */}
       <div className="absolute inset-0 bg-gradient-to-b from-red-950/10 via-transparent to-transparent pointer-events-none" />
 
-      {/* Logo/Header */}
       <div className="p-6 border-b border-border relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center glow-red border border-primary/30">
@@ -35,7 +33,6 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1.5 relative z-10">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -66,7 +63,6 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                 {item.label}
               </span>
 
-              {/* Active indicator */}
               {isActive && (
                 <div className="ml-auto w-1.5 h-6 bg-background rounded-full opacity-80" />
               )}
@@ -75,7 +71,6 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         })}
       </nav>
 
-      {/* Logout Button */}
       <div className="p-4 border-t border-border relative z-10">
         <button
           onClick={logout}

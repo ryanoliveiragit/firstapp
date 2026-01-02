@@ -15,7 +15,6 @@ export default function PerformanceMonitor() {
   });
 
   useEffect(() => {
-    // Simulate real-time metrics updates
     const interval = setInterval(() => {
       setMetrics({
         cpu: Math.floor(Math.random() * 30 + 10),
@@ -42,7 +41,6 @@ export default function PerformanceMonitor() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* CPU Usage */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">CPU Usage</span>
@@ -58,7 +56,6 @@ export default function PerformanceMonitor() {
           </div>
         </div>
 
-        {/* Memory Usage */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Memory Usage</span>
@@ -74,7 +71,6 @@ export default function PerformanceMonitor() {
           </div>
         </div>
 
-        {/* Disk Usage */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Disk Usage</span>

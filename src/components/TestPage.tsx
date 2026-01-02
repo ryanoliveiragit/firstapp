@@ -11,7 +11,6 @@ export default function TestPage() {
           Tailwind CSS & shadcn/ui Test
         </h1>
 
-        {/* Test Tailwind Utilities */}
         <Card>
           <CardHeader>
             <CardTitle>Tailwind Utilities Test</CardTitle>
@@ -29,7 +28,6 @@ export default function TestPage() {
           </CardContent>
         </Card>
 
-        {/* Test Custom Classes */}
         <Card className="holographic">
           <CardHeader>
             <CardTitle className="text-glow">Custom Effects Test</CardTitle>
@@ -44,7 +42,6 @@ export default function TestPage() {
           </CardContent>
         </Card>
 
-        {/* Test Buttons */}
         <Card>
           <CardHeader>
             <CardTitle>shadcn/ui Buttons Test</CardTitle>
@@ -59,7 +56,6 @@ export default function TestPage() {
           </CardContent>
         </Card>
 
-        {/* Test Responsive Grid */}
         <Card>
           <CardHeader>
             <CardTitle>Responsive Grid Test</CardTitle>
@@ -78,7 +74,6 @@ export default function TestPage() {
           </CardContent>
         </Card>
 
-        {/* Test Animations */}
         <Card>
           <CardHeader>
             <CardTitle>Animations Test</CardTitle>

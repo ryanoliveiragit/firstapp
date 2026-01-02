@@ -30,7 +30,6 @@ const KeyInput = () => {
       return;
     }
 
-    // Remove hífens para validação
     const cleanKey = key.replace(/-/g, '');
 
     if (cleanKey.length < 12) {
@@ -46,9 +45,7 @@ const KeyInput = () => {
       id: 'validating-key'
     });
 
-    // Simular validação com delay
     setTimeout(() => {
-      // Validação: apenas a chave "123123123123" é válida
       if (cleanKey === VALID_KEY) {
         setLicenseKey(key);
         toast.success('Licença ativada com sucesso!', {
@@ -81,11 +78,9 @@ const KeyInput = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      {/* Subtle background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* User Badge */}
         <div className="mb-8 flex items-center justify-between p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg">
           <div className="flex items-center gap-3">
             <img
@@ -107,7 +102,6 @@ const KeyInput = () => {
           </button>
         </div>
 
-        {/* Main Card */}
         <Card className="border-border bg-card/95 backdrop-blur-xl shadow-2xl">
           <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
 
@@ -127,7 +121,6 @@ const KeyInput = () => {
 
           <CardContent className="px-8 pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Key Input */}
               <div className="space-y-2">
                 <Input
                   id="license-key"
@@ -142,7 +135,6 @@ const KeyInput = () => {
                   disabled={isValidating}
                 />
 
-                {/* Error Message */}
                 {error && (
                   <div className="flex items-center gap-2 text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -151,7 +143,6 @@ const KeyInput = () => {
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
@@ -167,7 +158,6 @@ const KeyInput = () => {
                 )}
               </Button>
 
-              {/* Help Text */}
               <p className="text-xs text-center text-muted-foreground pt-2">
                 Não tem uma chave?{' '}
                 <a href="#" className="text-primary hover:underline font-medium">
@@ -178,7 +168,6 @@ const KeyInput = () => {
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-muted-foreground">
             © 2026 Paragon Tweaking Utility · v1.4.6
