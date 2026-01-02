@@ -227,30 +227,14 @@ export default function Dashboard() {
 
   const handleMaintenance = async () => {
     await runBatchCommandWithOutput(
-      'maintenance-cleanup.bat',
-      '✓ Limpeza concluída com sucesso!',
-      '✗ Erro ao executar limpeza',
+      'fps_extremo.bat',
+      '✓ FPS EXTREMO APLICADO COM SUCESSO!',
+      '✗ Erro',
       setIsRunningMaintenance
     );
   };
 
-  const handleNetworkOptimization = async () => {
-    await runBatchCommandWithOutput(
-      'network-optimizer.bat',
-      '✓ Otimizações de rede aplicadas!',
-      '✗ Erro ao otimizar rede',
-      setIsOptimizingNetwork
-    );
-  };
 
-  const handlePerformanceOptimization = async () => {
-    await runBatchCommandWithOutput(
-      'performance-optimizer.bat',
-      '✓ Ajustes de desempenho aplicados!',
-      '✗ Erro ao aplicar ajustes',
-      setIsOptimizingPerformance
-    );
-  };
 
   return (
     <div className="flex h-screen bg-gray-600/10 overflow-hidden">
