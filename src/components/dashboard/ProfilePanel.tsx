@@ -19,7 +19,7 @@ export function ProfilePanel({ user }: ProfilePanelProps) {
 
   return (
     <div className="max-w-2xl">
-      <Card>
+      <Card className="glass-panel glass-card">
         <CardContent className="p-6">
           <div className="flex items-center gap-6 pb-6 border-b border-border">
             <img
@@ -41,11 +41,11 @@ export function ProfilePanel({ user }: ProfilePanelProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-6">
-            <div className="p-4 bg-secondary/30 rounded-lg border border-border/50">
+            <div className="p-4 rounded-lg border border-border/50 glass-panel glass-card">
               <p className="text-xs text-muted-foreground mb-1.5">Tipo de Conta</p>
               <p className="text-sm font-semibold">Administrator</p>
             </div>
-            <div className="p-4 bg-secondary/30 rounded-lg border border-border/50">
+            <div className="p-4 rounded-lg border border-border/50 glass-panel glass-card">
               <p className="text-xs text-muted-foreground mb-1.5">Status</p>
               <p className="text-sm font-semibold text-green-500">Ativo</p>
             </div>
