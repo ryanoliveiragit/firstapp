@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
   const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
   const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
+  const [hasShellPermissions, setHasShellPermissions] = useState(false);
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const adminConsentResolver = useRef<((value: boolean) => void) | null>(null);
@@ -70,16 +71,31 @@ export default function Dashboard() {
   };
 
   const ensureShellPermissions = async () => {
-    const permissionResult = (await (requestPermissions as unknown as (
-      permissions: string[]
-    ) => Promise<{ status?: string }[]>)(['shell:allow-spawn', 'shell:allow-execute']));
+    if (hasShellPermissions) return true;
 
-    if (!permissionResult.every(permission => permission.status === 'granted')) {
-      alert('Não foi possível obter permissão para executar comandos de shell.');
+    try {
+      const permissionResult = await (requestPermissions as unknown as (
+        permissions: string | string[]
+      ) => Promise<{ status?: string } | { status?: string }[]>)(
+        ['shell:allow-spawn', 'shell:allow-execute']
+      );
+      const permissions = Array.isArray(permissionResult) ? permissionResult : [permissionResult];
+
+      if (!permissions.every(permission => permission.status === 'granted')) {
+        const denied = permissions.filter(permission => permission.status !== 'granted');
+        addOutput(`✗ Permissão de shell negada (${denied.map(p => p.status ?? 'desconhecida').join(', ')}).`);
+        alert('Não foi possível obter permissão para executar comandos de shell. Verifique as permissões do aplicativo.');
+        return false;
+      }
+
+      setHasShellPermissions(true);
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      addOutput(`[EXCEÇÃO] Falha ao solicitar permissões de shell: ${message}`);
+      alert(`Não foi possível solicitar permissões de shell: ${message}`);
       return false;
     }
-
-    return true;
   };
 
   const runBatchCommandWithOutput = async (
