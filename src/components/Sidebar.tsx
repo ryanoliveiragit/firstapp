@@ -1,4 +1,5 @@
-import { FileKey, FileCode2, Settings, User, LogOut, Activity } from 'lucide-react';
+import { useState } from 'react';
+import { FileKey, FileCode2, Settings, User, LogOut, Zap, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -8,36 +9,47 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'regedits', label: 'Regedits', icon: FileKey },
+  { id: 'regedits', label: 'Registry', icon: FileKey },
   { id: 'exec', label: 'Executáveis', icon: FileCode2 },
+  { id: 'status', label: 'Status', icon: Activity },
   { id: 'config', label: 'Configurações', icon: Settings },
   { id: 'profile', label: 'Perfil', icon: User },
 ];
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const { logout } = useAuth();
+  const [logoError, setLogoError] = useState(false);
 
   return (
-    <div className="w-64 h-screen bg-card border-r border-border flex flex-col relative overflow-hidden">
-      {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-b from-red-950/10 via-transparent to-transparent pointer-events-none" />
-
-      {/* Logo/Header */}
-      <div className="p-6 border-b border-border relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center glow-red border border-primary/30">
-            <Activity className="w-6 h-6 text-primary" strokeWidth={2.5} />
+    <div className="w-64 h-screen border-r border-white/30 flex flex-col animate-slide-in-left">
+ 
+       <img 
+    src='/gradient-1.png' 
+    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
+  />
+      <div className="p-4">
+        <div className="flex items-center gap-3 animate-fade-in-up">
+          <div className="w-8 h-8 bg-foreground dark:bg-transparent rounded-md flex items-center justify-center overflow-hidden hover:scale-110 transition-transform duration-300">
+            {!logoError ? (
+              <img
+                src="/logo.png"
+                alt="Synapse Logo"
+                className="w-full h-full object-cover"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <Zap className="w-5 h-5 text-background" strokeWidth={2.5} />
+            )}
           </div>
           <div>
-            <h1 className="text-xl font-bold text-glow tracking-tight">Paragon</h1>
-            <p className="text-xs text-muted-foreground">Tweaking Utility</p>
+            <h1 className="text-lg font-medium">synapse</h1>
+            <p className="text-xs text-muted-foreground">Performance</p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1.5 relative z-10">
-        {menuItems.map((item) => {
+      <nav className="flex-1 p-3 space-y-1">
+        {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
@@ -46,43 +58,28 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
+                "w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium animate-fade-in-up hover:scale-[1.02]",
                 isActive
-                  ? "bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                  ? "border bg-white/10  border-[#6c6d6e] text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
               )}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <Icon 
-                className={cn(
-                  "w-5 h-5 transition-all duration-200",
-                  isActive && "drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]"
-                )} 
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-              <span className={cn(
-                "font-medium text-sm",
-                isActive && "font-semibold"
-              )}>
-                {item.label}
-              </span>
-
-              {/* Active indicator */}
-              {isActive && (
-                <div className="ml-auto w-1.5 h-6 bg-background rounded-full opacity-80" />
-              )}
+              <Icon className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
+              <span>{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-4 border-t border-border relative z-10">
+      <div className="p-3 border-t border-white/30 animate-fade-in" style={{ animationDelay: '300ms' }}>
+        
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200 hover:scale-[1.02]"
         >
-          <LogOut className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" strokeWidth={2} />
-          <span className="font-medium text-sm">Sair</span>
+          <LogOut className="w-4 h-4" strokeWidth={2} />
+          <span>Sair</span>
         </button>
       </div>
     </div>

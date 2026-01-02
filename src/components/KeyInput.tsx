@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Key, AlertCircle, Loader2, LogOut } from 'lucide-react';
+import { AlertCircle, Loader2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 const VALID_KEY = '123123123123';
@@ -30,7 +30,6 @@ const KeyInput = () => {
       return;
     }
 
-    // Remove hífens para validação
     const cleanKey = key.replace(/-/g, '');
 
     if (cleanKey.length < 12) {
@@ -46,14 +45,12 @@ const KeyInput = () => {
       id: 'validating-key'
     });
 
-    // Simular validação com delay
     setTimeout(() => {
-      // Validação: apenas a chave "123123123123" é válida
       if (cleanKey === VALID_KEY) {
         setLicenseKey(key);
         toast.success('Licença ativada com sucesso!', {
           id: 'validating-key',
-          description: 'Bem-vindo ao Paragon Tweaking Utility'
+          description: 'Bem-vindo ao Synapse'
         });
         setIsValidating(false);
       } else {
@@ -80,54 +77,22 @@ const KeyInput = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      {/* Subtle background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-
-      <div className="w-full max-w-md relative z-10">
-        {/* User Badge */}
-        <div className="mb-8 flex items-center justify-between p-4 bg-card/80 backdrop-blur-sm border border-border rounded-lg">
-          <div className="flex items-center gap-3">
-            <img
-              src={avatarUrl}
-              alt="User avatar"
-              className="w-10 h-10 rounded-full border-2 border-primary/20"
-            />
-            <div>
-              <p className="text-sm font-medium text-foreground">{user?.username}</p>
-              <p className="text-xs text-muted-foreground">Discord</p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-md"
-            title="Sair"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Main Card */}
-        <Card className="border-border bg-card/95 backdrop-blur-xl shadow-2xl">
-          <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
-
-          <CardHeader className="text-center space-y-3 pt-8 pb-6">
-            <div className="flex justify-center mb-2">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center ring-1 ring-primary/20">
-                <Key className="w-7 h-7 text-primary" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-light text-foreground">
-              Ativar Licença
-            </CardTitle>
+    <div className="min-h-screen flex items-center justify-center  p-4">
+      <div className="w-full max-w-md space-y-6">
+              <img 
+    src='/gradient-1.png' 
+    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
+  />
+        <Card className="border-border">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-semibold tracking-tight">Insira sua chave de acesso</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Insira sua chave de acesso
+              Insira sua chave de acesso para continuar
             </p>
           </CardHeader>
 
           <CardContent className="px-8 pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Key Input */}
               <div className="space-y-2">
                 <Input
                   id="license-key"
@@ -142,7 +107,6 @@ const KeyInput = () => {
                   disabled={isValidating}
                 />
 
-                {/* Error Message */}
                 {error && (
                   <div className="flex items-center gap-2 text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -151,7 +115,6 @@ const KeyInput = () => {
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
@@ -167,7 +130,6 @@ const KeyInput = () => {
                 )}
               </Button>
 
-              {/* Help Text */}
               <p className="text-xs text-center text-muted-foreground pt-2">
                 Não tem uma chave?{' '}
                 <a href="#" className="text-primary hover:underline font-medium">
@@ -178,12 +140,9 @@ const KeyInput = () => {
           </CardContent>
         </Card>
 
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-muted-foreground">
-            © 2026 Paragon Tweaking Utility · v1.4.6
-          </p>
-        </div>
+        <p className="mt-8 text-center text-xs text-muted-foreground">
+          Synapse v1.5.0
+        </p>
       </div>
     </div>
   );

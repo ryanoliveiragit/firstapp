@@ -23,7 +23,6 @@ function App() {
     );
   }
 
-  // Flow: No user -> Login -> KeyInput (required) -> Dashboard
   if (!user) {
     return (
       <>
