@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { FileKey, FileCode2, Settings, User, LogOut, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,13 +17,23 @@ const menuItems = [
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const { logout } = useAuth();
+  const [logoError, setLogoError] = useState(false);
 
   return (
     <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center">
-            <Zap className="w-5 h-5 text-background" strokeWidth={2.5} />
+          <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center overflow-hidden">
+            {!logoError ? (
+              <img
+                src="/logo.png"
+                alt="Synapse Logo"
+                className="w-full h-full object-cover"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <Zap className="w-5 h-5 text-background" strokeWidth={2.5} />
+            )}
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight">Synapse</h1>
