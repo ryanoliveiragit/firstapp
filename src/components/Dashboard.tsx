@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from './Sidebar';
 import { Command } from '@tauri-apps/plugin-shell';
 import { resolveResource } from '@tauri-apps/api/path';
+import { toast } from 'sonner';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { WarningBanner } from './dashboard/WarningBanner';
 import { FPSBoostCard } from './dashboard/FPSBoostCard';
@@ -119,11 +120,13 @@ export default function Dashboard() {
         logCommandResult(resourceName, { code: data.code });
         
         if (data.code === 0) {
-          addOutput(`✓ ${onSuccess}`);
-          alert(onSuccess);
+          const successMessage = `✓ ${onSuccess}`;
+          addOutput(successMessage);
+          toast.success(successMessage);
         } else {
-          addOutput(`✗ ${onError} - Código: ${data.code}`);
-          alert(`${onError}: Código de saída ${data.code}`);
+          const failMessage = `✗ ${onError} - Código: ${data.code}`;
+          addOutput(failMessage);
+          toast.error(`${onError}: Código de saída ${data.code}`);
         }
         setLoading(false);
         finalizeConsole();
@@ -132,7 +135,7 @@ export default function Dashboard() {
       // Escuta erros
       cmd.on('error', (error: string) => {
         addOutput(`[ERRO] ${error}`);
-        alert(`${onError}: ${error}`);
+        toast.error(`${onError}: ${error}`);
         setLoading(false);
         finalizeConsole();
       });
@@ -142,7 +145,7 @@ export default function Dashboard() {
       console.error(`[Synapse] ${resourceName} error:`, error);
       const errorMsg = error instanceof Error ? error.message : String(error);
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
-      alert(`${onError}: ${errorMsg}`);
+      toast.error(`${onError}: ${errorMsg}`);
       setLoading(false);
       finalizeConsole();
     }
@@ -183,11 +186,13 @@ export default function Dashboard() {
         logCommandResult('fps-boost.reg', { code: data.code });
 
         if (data.code === 0) {
-          addOutput('✓ FPS Boost aplicado com sucesso!');
-          alert('✓ FPS Boost aplicado com sucesso!');
+          const successMessage = '✓ FPS Boost aplicado com sucesso!';
+          addOutput(successMessage);
+          toast.success(successMessage);
         } else {
-          addOutput(`✗ Erro ao aplicar FPS Boost - Código: ${data.code}`);
-          alert(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
+          const failMessage = `✗ Erro ao aplicar FPS Boost - Código: ${data.code}`;
+          addOutput(failMessage);
+          toast.error(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
         }
         setIsApplyingFPS(false);
         finalizeConsole();
@@ -195,7 +200,7 @@ export default function Dashboard() {
 
       cmd.on('error', (error: string) => {
         addOutput(`[ERRO] ${error}`);
-        alert(`✗ Erro: ${error}`);
+        toast.error(`✗ Erro: ${error}`);
         setIsApplyingFPS(false);
         finalizeConsole();
       });
@@ -205,7 +210,7 @@ export default function Dashboard() {
       console.error('[Synapse] fps-boost.reg error:', error);
       const errorMsg = error instanceof Error ? error.message : String(error);
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
-      alert(`✗ Erro: ${errorMsg}`);
+      toast.error(`✗ Erro: ${errorMsg}`);
       setIsApplyingFPS(false);
       finalizeConsole();
     }
