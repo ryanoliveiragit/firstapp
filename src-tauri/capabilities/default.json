@@ -23,6 +23,18 @@
           ]
         },
         {
+          "name": "regedit-start",
+          "cmd": "cmd",
+          "args": [
+            "/C",
+            "start",
+            "",
+            "regedit.exe",
+            "/s",
+            { "validator": "^.+\\.reg$" }
+          ]
+        },
+        {
           "name": "regedit-exe",
           "cmd": "regedit.exe",
           "args": [
