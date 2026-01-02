@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Gpu, Loader2, Check } from 'lucide-react';
+import { useState } from 'react';
 
 interface AutoGPUCardProps {
   isExecuting: boolean;
@@ -15,22 +16,31 @@ const features = [
 ];
 
 export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  const handleToggle = (checked: boolean) => {
+    setIsEnabled(checked);
+    if (checked) {
+      onExecute();
+    }
+  };
+
   return (
     <Card className="card-hover animate-scale-in glass-panel glass-card h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110 border border-white/10">
-              <Gpu className="w-5 h-5" />
+            <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
+              <Gpu className="w-5 h-5 text-primary" />
             </div>
             <div>
               <CardTitle className="text-lg">GPU Config</CardTitle>
               <CardDescription>Configuração automática para Nvidia e AMD</CardDescription>
             </div>
           </div>
-          <div className="glow-pill">
-            <span className="glow-dot" />
-            <span className="text-[11px] text-muted-foreground">Auto-detect</span>
+          <div className="glow-pill bg-primary/10 border-primary/20">
+            <span className="glow-dot bg-primary" />
+            <span className="text-[11px] text-primary">Auto-detect</span>
           </div>
         </div>
       </CardHeader>
@@ -50,21 +60,19 @@ export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
           </span>
           <span className="text-foreground/80">~20s</span>
         </div>
-        <Button
-          onClick={onExecute}
-          disabled={isExecuting}
-          className="w-full button-hover button-shine bg-primary/90 text-primary-foreground"
-          size="lg"
-        >
-          {isExecuting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Executando...
-            </>
-          ) : (
-            'Executar Configuração'
-          )}
-        </Button>
+        <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+          <div className="flex items-center gap-2">
+            {isExecuting && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+            <span className="text-sm font-medium">
+              {isExecuting ? 'Executando...' : isEnabled ? 'Ativo' : 'Executar Configuração'}
+            </span>
+          </div>
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={handleToggle}
+            disabled={isExecuting}
+          />
+        </div>
       </CardContent>
     </Card>
   );
