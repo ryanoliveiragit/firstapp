@@ -33,7 +33,8 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "auto-gpu-config.bat"
+      "auto-gpu-config.bat",
+      "fps-boost.reg"
     ]
   }
 }
