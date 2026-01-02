@@ -9,6 +9,7 @@ import { FPSBoostCard } from './dashboard/FPSBoostCard';
 import { AutoGPUCard } from './dashboard/AutoGPUCard';
 import { SettingsPanel } from './dashboard/SettingsPanel';
 import { ProfilePanel } from './dashboard/ProfilePanel';
+import { StatusPanel } from './dashboard/StatusPanel';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('regedits');
@@ -86,6 +87,10 @@ export default function Dashboard() {
             <div className="max-w-2xl">
               <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
             </div>
+          )}
+
+          {activeTab === 'status' && (
+            <StatusPanel />
           )}
 
           {activeTab === 'config' && (

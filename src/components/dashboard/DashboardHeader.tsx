@@ -22,6 +22,10 @@ const tabTitles = {
     title: 'Executáveis',
     description: 'Utilitários e ferramentas de sistema'
   },
+  status: {
+    title: 'Status do Sistema',
+    description: 'Monitore o desempenho em tempo real'
+  },
   config: {
     title: 'Configurações',
     description: 'Personalize suas preferências'
