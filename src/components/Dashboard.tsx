@@ -1,32 +1,40 @@
-import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import Sidebar from './Sidebar';
-import { Command } from '@tauri-apps/plugin-shell';
-import { resolveResource } from '@tauri-apps/api/path';
-import { toast } from 'sonner';
-import { DashboardHeader } from './dashboard/DashboardHeader';
-import { WarningBanner } from './dashboard/WarningBanner';
-import { FPSBoostCard } from './dashboard/FPSBoostCard';
-import { AutoGPUCard } from './dashboard/AutoGPUCard';
-import { SettingsPanel } from './dashboard/SettingsPanel';
-import { ProfilePanel } from './dashboard/ProfilePanel';
-import { StatusPanel } from './dashboard/StatusPanel';
-import { MaintenanceCard } from './dashboard/MaintenanceCard';
-import { NetworkOptimizerCard } from './dashboard/NetworkOptimizerCard';
-import { PerformanceOptimizerCard } from './dashboard/PerformanceOptimizerCard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Info } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import Sidebar from "./Sidebar";
+import { Command } from "@tauri-apps/plugin-shell";
+import { resolveResource } from "@tauri-apps/api/path";
+import { toast } from "sonner";
+import { DashboardHeader } from "./dashboard/DashboardHeader";
+import { WarningBanner } from "./dashboard/WarningBanner";
+import { FPSBoostCard } from "./dashboard/FPSBoostCard";
+import { AutoGPUCard } from "./dashboard/AutoGPUCard";
+import { SettingsPanel } from "./dashboard/SettingsPanel";
+import { ProfilePanel } from "./dashboard/ProfilePanel";
+import { StatusPanel } from "./dashboard/StatusPanel";
+import { MaintenanceCard } from "./dashboard/MaintenanceCard";
+import { NetworkOptimizerCard } from "./dashboard/NetworkOptimizerCard";
+import { PerformanceOptimizerCard } from "./dashboard/PerformanceOptimizerCard";
+import { OptimizationLevelBadge } from "./dashboard/OptimizationLevelBadge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Info } from "lucide-react";
 
-type OptimizationLevel = 'basica' | 'intermediaria' | 'avancada';
+type OptimizationLevel = "basica" | "intermediaria" | "avancada";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('optimizations');
-  const [optimizationLevel, setOptimizationLevel] = useState<OptimizationLevel>('avancada');
+  const [activeTab, setActiveTab] = useState("optimizations");
+  const [optimizationLevel, setOptimizationLevel] =
+    useState<OptimizationLevel>("avancada");
   const [isFetchingOptimizations, setIsFetchingOptimizations] = useState(false);
   const [showOptimizationModal, setShowOptimizationModal] = useState(false);
   const [optimizationFlowStep, setOptimizationFlowStep] = useState<
-    'intro' | 'fetch' | 'found' | 'redirecting'
-  >('intro');
+    "intro" | "fetch" | "found" | "redirecting"
+  >("intro");
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
@@ -43,7 +51,7 @@ export default function Dashboard() {
     label: string,
     output: { code: number | null; stdout?: string; stderr?: string }
   ) => {
-    console.info(`[Synapse] ${label} -> exit code: ${output.code ?? 'null'}`);
+    console.info(`[Synapse] ${label} -> exit code: ${output.code ?? "null"}`);
     if (output.stdout) {
       console.info(`[Synapse] ${label} stdout: ${output.stdout}`);
     }
@@ -55,13 +63,15 @@ export default function Dashboard() {
   const buildStartProcessCommand = (filePath: string, args?: string) => {
     const sanitizedPath = filePath.replace(/'/g, "''");
     const sanitizedArgs = args ? args.replace(/'/g, "''") : undefined;
-    return `Start-Process -FilePath '${sanitizedPath}' -Verb RunAs${sanitizedArgs ? ` -ArgumentList '${sanitizedArgs}'` : ''} -WindowStyle Hidden`;
+    return `Start-Process -FilePath '${sanitizedPath}' -Verb RunAs${
+      sanitizedArgs ? ` -ArgumentList '${sanitizedArgs}'` : ""
+    } -WindowStyle Hidden`;
   };
 
   const requestAdminPermission = async () => {
     if (hasAdminConsent) return true;
 
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       adminConsentResolver.current = resolve;
       setShowAdminModal(true);
     });
@@ -73,7 +83,10 @@ export default function Dashboard() {
   }, []);
 
   const addOutput = (message: string) => {
-    setCommandOutput(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+    setCommandOutput((prev) => [
+      ...prev,
+      `[${new Date().toLocaleTimeString()}] ${message}`,
+    ]);
   };
 
   const clearOutput = () => {
@@ -85,7 +98,8 @@ export default function Dashboard() {
     clearOutput();
   };
 
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const wait = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   const ensureShellPermissions = async () => true;
 
@@ -108,44 +122,50 @@ export default function Dashboard() {
 
     try {
       const batchPath = await resolveResource(resourceName);
-      const command = buildStartProcessCommand(batchPath, `/C "call \\"${batchPath}\\""`);
-      
-      const cmd = Command.create('powershell-elevated', [
-        '-NoProfile',
-        '-NonInteractive',
-        '-Command',
+      const command = buildStartProcessCommand(
+        batchPath,
+        `/C "call \\"${batchPath}\\""`
+      );
+
+      const cmd = Command.create("powershell-elevated", [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
         command,
       ]);
 
       // Escuta stdout em tempo real
-      cmd.stdout.on('data', (line: string) => {
+      cmd.stdout.on("data", (line: string) => {
         addOutput(`[OUT] ${line}`);
       });
 
       // Escuta stderr em tempo real
-      cmd.stderr.on('data', (line: string) => {
+      cmd.stderr.on("data", (line: string) => {
         addOutput(`[ERR] ${line}`);
       });
 
       // Escuta quando o processo termina
-      cmd.on('close', (data: { code: number | null; signal: number | null }) => {
-        logCommandResult(resourceName, { code: data.code });
-        
-        if (data.code === 0) {
-          const successMessage = `✓ ${onSuccess}`;
-          addOutput(successMessage);
-          toast.success(successMessage);
-        } else {
-          const failMessage = `✗ ${onError} - Código: ${data.code}`;
-          addOutput(failMessage);
-          toast.error(`${onError}: Código de saída ${data.code}`);
+      cmd.on(
+        "close",
+        (data: { code: number | null; signal: number | null }) => {
+          logCommandResult(resourceName, { code: data.code });
+
+          if (data.code === 0) {
+            const successMessage = `✓ ${onSuccess}`;
+            addOutput(successMessage);
+            toast.success(successMessage);
+          } else {
+            const failMessage = `✗ ${onError} - Código: ${data.code}`;
+            addOutput(failMessage);
+            toast.error(`${onError}: Código de saída ${data.code}`);
+          }
+          setLoading(false);
+          finalizeConsole();
         }
-        setLoading(false);
-        finalizeConsole();
-      });
+      );
 
       // Escuta erros
-      cmd.on('error', (error: string) => {
+      cmd.on("error", (error: string) => {
         addOutput(`[ERRO] ${error}`);
         toast.error(`${onError}: ${error}`);
         setLoading(false);
@@ -173,44 +193,50 @@ export default function Dashboard() {
     setIsApplyingFPS(true);
     setShowConsole(true);
     clearOutput();
-    addOutput('Aplicando FPS Boost...');
+    addOutput("Aplicando FPS Boost...");
 
     try {
-      const regPath = await resolveResource('fps-boost.reg');
-      const command = buildStartProcessCommand('regedit.exe', `/s \\"${regPath}\\"`);
-      
-      const cmd = Command.create('powershell-elevated', [
-        '-NoProfile',
-        '-NonInteractive',
-        '-Command',
+      const regPath = await resolveResource("fps-boost.reg");
+      const command = buildStartProcessCommand(
+        "regedit.exe",
+        `/s \\"${regPath}\\"`
+      );
+
+      const cmd = Command.create("powershell-elevated", [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
         command,
       ]);
 
-      cmd.stdout.on('data', (line: string) => {
+      cmd.stdout.on("data", (line: string) => {
         addOutput(`[OUT] ${line}`);
       });
 
-      cmd.stderr.on('data', (line: string) => {
+      cmd.stderr.on("data", (line: string) => {
         addOutput(`[ERR] ${line}`);
       });
 
-      cmd.on('close', (data: { code: number | null; signal: number | null }) => {
-        logCommandResult('fps-boost.reg', { code: data.code });
+      cmd.on(
+        "close",
+        (data: { code: number | null; signal: number | null }) => {
+          logCommandResult("fps-boost.reg", { code: data.code });
 
-        if (data.code === 0) {
-          const successMessage = '✓ FPS Boost aplicado com sucesso!';
-          addOutput(successMessage);
-          toast.success(successMessage);
-        } else {
-          const failMessage = `✗ Erro ao aplicar FPS Boost - Código: ${data.code}`;
-          addOutput(failMessage);
-          toast.error(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
+          if (data.code === 0) {
+            const successMessage = "✓ FPS Boost aplicado com sucesso!";
+            addOutput(successMessage);
+            toast.success(successMessage);
+          } else {
+            const failMessage = `✗ Erro ao aplicar FPS Boost - Código: ${data.code}`;
+            addOutput(failMessage);
+            toast.error(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
+          }
+          setIsApplyingFPS(false);
+          finalizeConsole();
         }
-        setIsApplyingFPS(false);
-        finalizeConsole();
-      });
+      );
 
-      cmd.on('error', (error: string) => {
+      cmd.on("error", (error: string) => {
         addOutput(`[ERRO] ${error}`);
         toast.error(`✗ Erro: ${error}`);
         setIsApplyingFPS(false);
@@ -219,7 +245,7 @@ export default function Dashboard() {
 
       await cmd.spawn();
     } catch (error) {
-      console.error('[Synapse] fps-boost.reg error:', error);
+      console.error("[Synapse] fps-boost.reg error:", error);
       const errorMsg = error instanceof Error ? error.message : String(error);
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
       toast.error(`✗ Erro: ${errorMsg}`);
@@ -230,64 +256,65 @@ export default function Dashboard() {
 
   const handleAutoGPU = async () => {
     await runBatchCommandWithOutput(
-      'auto-gpu-config.bat',
-      '✓ GPU configurada com sucesso!',
-      '✗ Erro ao configurar GPU',
+      "auto-gpu-config.bat",
+      "✓ GPU configurada com sucesso!",
+      "✗ Erro ao configurar GPU",
       setIsExecuting
     );
   };
 
   const handleMaintenance = async () => {
     await runBatchCommandWithOutput(
-      'maintenance-cleanup.bat',
-      '✓ Limpeza rápida concluída!',
-      '✗ Erro ao executar limpeza',
+      "maintenance-cleanup.bat",
+      "✓ Limpeza rápida concluída!",
+      "✗ Erro ao executar limpeza",
       setIsRunningMaintenance
     );
   };
 
   const handleNetworkOptimization = async () => {
     await runBatchCommandWithOutput(
-      'network-optimizer.bat',
-      '✓ Rede otimizada com sucesso!',
-      '✗ Erro ao otimizar rede',
+      "network-optimizer.bat",
+      "✓ Rede otimizada com sucesso!",
+      "✗ Erro ao otimizar rede",
       setIsOptimizingNetwork
     );
   };
 
   const handlePerformanceOptimization = async () => {
     await runBatchCommandWithOutput(
-      'performance-optimizer.bat',
-      '✓ Otimização de desempenho aplicada!',
-      '✗ Erro ao aplicar otimizações de desempenho',
+      "performance-optimizer.bat",
+      "✓ Otimização de desempenho aplicada!",
+      "✗ Erro ao aplicar otimizações de desempenho",
       setIsOptimizingPerformance
     );
   };
 
   const renderOptimizationContent = () => {
-    if (optimizationLevel === 'avancada') {
+    if (optimizationLevel === "avancada") {
       return (
-        <>
-          <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 auto-rows-fr" style={{ animationDelay: '120ms' }}>
-            <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
-            <PerformanceOptimizerCard
-              isExecuting={isOptimizingPerformance}
-              onExecute={handlePerformanceOptimization}
-            />
-          </div>
-        </>
+        <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 auto-rows-fr z-50 ">
+          <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
+          <PerformanceOptimizerCard
+            isExecuting={isOptimizingPerformance}
+            onExecute={handlePerformanceOptimization}
+          />
+        </div>
       );
     }
 
     const levelLabel =
-      optimizationLevel === 'basica'
-        ? 'Básica'
-        : optimizationLevel === 'intermediaria'
-          ? 'Intermediária'
-          : 'Avançada';
+      optimizationLevel === "basica"
+        ? "Básica"
+        : optimizationLevel === "intermediaria"
+        ? "Intermediária"
+        : "Avançada";
 
     return (
-      <Card className="glass-panel glass-card animate-fade-in-up" style={{ animationDelay: '120ms' }}>
+      <Card
+        className="glass-panel glass-card animate-fade-in-up"
+        style={{ animationDelay: "120ms" }}
+      >
         <CardHeader className="flex flex-row items-center gap-3">
           <div className="p-2 bg-secondary rounded-md border border-white/10">
             <Info className="w-5 h-5" />
@@ -300,9 +327,10 @@ export default function Dashboard() {
           </div>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Selecione o nível <span className="text-foreground font-medium">Avançada</span> para
-          acessar as otimizações atuais (regedits e scripts .bat) enquanto os demais níveis são
-          finalizados.
+          Selecione o nível{" "}
+          <span className="text-foreground font-medium">Avançada</span> para
+          acessar as otimizações atuais (regedits e scripts .bat) enquanto os
+          demais níveis são finalizados.
         </CardContent>
       </Card>
     );
@@ -310,25 +338,25 @@ export default function Dashboard() {
 
   const simulateOptimizationFetch = async () => {
     setShowOptimizationModal(true);
-    setOptimizationFlowStep('intro');
+    setOptimizationFlowStep("intro");
 
     await wait(400);
-    setOptimizationFlowStep('fetch');
+    setOptimizationFlowStep("fetch");
 
     await wait(1200);
-    setOptimizationFlowStep('found');
-    setOptimizationLevel('avancada');
+    setOptimizationFlowStep("found");
+    setOptimizationLevel("avancada");
 
     await wait(700);
-    setOptimizationFlowStep('redirecting');
+    setOptimizationFlowStep("redirecting");
 
     await wait(500);
-    setActiveTab('optimizations');
+    setActiveTab("optimizations");
     setShowOptimizationModal(false);
   };
 
   const handleTabChange = async (tabId: string) => {
-    if (tabId === 'optimizations') {
+    if (tabId === "optimizations") {
       if (isFetchingOptimizations) return;
 
       try {
@@ -343,13 +371,11 @@ export default function Dashboard() {
     setActiveTab(tabId);
   };
 
-
-
   const optimizationFlowSteps = [
-    { key: 'intro', label: 'Otimizações' },
-    { key: 'fetch', label: 'Buscando otimizações da sua key' },
-    { key: 'found', label: 'Otimização avançada encontrada' },
-    { key: 'redirecting', label: 'Redirecionando' },
+    { key: "intro", label: "Otimizações" },
+    { key: "fetch", label: "Buscando otimizações da sua key" },
+    { key: "found", label: "Otimização avançada encontrada" },
+    { key: "redirecting", label: "Redirecionando" },
   ] as const;
 
   return (
@@ -366,10 +392,13 @@ export default function Dashboard() {
                 <span className="text-xl">!</span>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Permissão de Administrador</h3>
+                <h3 className="text-lg font-semibold">
+                  Permissão de Administrador
+                </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Precisamos da sua autorização para executar otimizações com privilégios elevados.
-                  Ao continuar, aceite o prompt do Windows que será exibido.
+                  Precisamos da sua autorização para executar otimizações com
+                  privilégios elevados. Ao continuar, aceite o prompt do Windows
+                  que será exibido.
                 </p>
               </div>
             </div>
@@ -408,9 +437,12 @@ export default function Dashboard() {
                 <span className="text-lg">⏳</span>
               </div>
               <div>
-                <h3 className="text-lg font-semibold">Sincronizando otimizações</h3>
+                <h3 className="text-lg font-semibold">
+                  Sincronizando otimizações
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Estamos buscando e aplicando automaticamente o nível avançado para sua conta.
+                  Estamos buscando e aplicando automaticamente o nível avançado
+                  para sua conta.
                 </p>
               </div>
             </div>
@@ -418,7 +450,7 @@ export default function Dashboard() {
             <div className="space-y-3">
               {optimizationFlowSteps.map((step, index) => {
                 const currentIndex = optimizationFlowSteps.findIndex(
-                  flowStep => flowStep.key === optimizationFlowStep
+                  (flowStep) => flowStep.key === optimizationFlowStep
                 );
                 const isActive = optimizationFlowStep === step.key;
                 const isDone = index < currentIndex;
@@ -429,14 +461,20 @@ export default function Dashboard() {
                     className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
                   >
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${isDone ? 'bg-green-500/20 text-green-400' : 'bg-primary/10 text-primary'}`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                        isDone
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-primary/10 text-primary"
+                      }`}
                     >
-                      {isActive ? '...' : isDone ? '✓' : index + 1}
+                      {isActive ? "..." : isDone ? "✓" : index + 1}
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{step.label}</p>
                       {isActive && (
-                        <p className="text-xs text-muted-foreground">Processando...</p>
+                        <p className="text-xs text-muted-foreground">
+                          Processando...
+                        </p>
                       )}
                     </div>
                   </div>
@@ -478,19 +516,21 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-black/60 border border-white/5 rounded-lg p-3 max-h-72 min-h-[220px] overflow-y-auto font-mono text-xs space-y-1">
                     {commandOutput.length === 0 && (
-                      <div className="text-muted-foreground">Aguardando logs...</div>
+                      <div className="text-muted-foreground">
+                        Aguardando logs...
+                      </div>
                     )}
                     {commandOutput.map((line, idx) => (
                       <div
                         key={idx}
                         className={`${
-                          line.includes('[ERR]') || line.includes('[ERRO]')
-                            ? 'text-red-400'
-                            : line.includes('✓')
-                            ? 'text-green-400'
-                            : line.includes('✗')
-                            ? 'text-yellow-300'
-                            : 'text-gray-200'
+                          line.includes("[ERR]") || line.includes("[ERRO]")
+                            ? "text-red-400"
+                            : line.includes("✓")
+                            ? "text-green-400"
+                            : line.includes("✗")
+                            ? "text-yellow-300"
+                            : "text-gray-200"
                         }`}
                       >
                         {line}
@@ -501,42 +541,56 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === 'optimizations' && (
+            {activeTab === "optimizations" && (
               <div className="space-y-4">
-
-
+                <OptimizationLevelBadge level={optimizationLevel} />
                 {renderOptimizationContent()}
               </div>
             )}
 
-            {activeTab === 'utilities' && (
+            {activeTab === "utilities" && (
               <div
                 className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
-                style={{ animationDelay: '100ms' }}
+                style={{ animationDelay: "100ms" }}
               >
-                <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
+                <AutoGPUCard
+                  isExecuting={isExecuting}
+                  onExecute={handleAutoGPU}
+                />
                 <NetworkOptimizerCard
                   isExecuting={isOptimizingNetwork}
                   onExecute={handleNetworkOptimization}
                 />
-                <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
+                <MaintenanceCard
+                  isExecuting={isRunningMaintenance}
+                  onExecute={handleMaintenance}
+                />
               </div>
             )}
 
-            {activeTab === 'status' && (
-              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            {activeTab === "status" && (
+              <div
+                className="animate-fade-in-up"
+                style={{ animationDelay: "100ms" }}
+              >
                 <StatusPanel />
               </div>
             )}
 
-            {activeTab === 'config' && (
-              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            {activeTab === "config" && (
+              <div
+                className="animate-fade-in-up"
+                style={{ animationDelay: "100ms" }}
+              >
                 <SettingsPanel />
               </div>
             )}
 
-            {activeTab === 'profile' && (
-              <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            {activeTab === "profile" && (
+              <div
+                className="animate-fade-in-up"
+                style={{ animationDelay: "100ms" }}
+              >
                 <ProfilePanel user={user} />
               </div>
             )}
