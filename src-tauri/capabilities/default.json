@@ -10,7 +10,7 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "name": "cmd-start-call",
+          "name": "cmd",
           "cmd": "cmd",
           "args": [
             "/C",
