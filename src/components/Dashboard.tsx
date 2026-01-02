@@ -22,6 +22,7 @@ type OptimizationLevel = 'basica' | 'intermediaria' | 'avancada';
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('optimizations');
   const [optimizationLevel, setOptimizationLevel] = useState<OptimizationLevel>('avancada');
+  const [isFetchingOptimizations, setIsFetchingOptimizations] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
@@ -301,6 +302,41 @@ export default function Dashboard() {
     );
   };
 
+  const simulateOptimizationFetch = async () => {
+    toast.message('Otimizações', {
+      description: 'Iniciando verificação das otimizações disponíveis...',
+    });
+
+    const fetchPromise = new Promise<OptimizationLevel>(resolve => {
+      setTimeout(() => resolve('avancada'), 1200);
+    });
+
+    const level = await toast.promise(fetchPromise, {
+      loading: 'Buscando otimizações da sua key...',
+      success: 'Otimização avançada encontrada. Redirecionando...',
+      error: 'Não foi possível localizar otimizações para esta key.',
+    });
+
+    setOptimizationLevel(level);
+    setActiveTab('optimizations');
+  };
+
+  const handleTabChange = async (tabId: string) => {
+    if (tabId === 'optimizations') {
+      if (isFetchingOptimizations) return;
+
+      try {
+        setIsFetchingOptimizations(true);
+        await simulateOptimizationFetch();
+      } finally {
+        setIsFetchingOptimizations(false);
+      }
+      return;
+    }
+
+    setActiveTab(tabId);
+  };
+
 
 
   return (
@@ -351,7 +387,11 @@ export default function Dashboard() {
         </div>
       )}
       <div className="relative flex h-screen">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          isOptimizationsLoading={isFetchingOptimizations}
+        />
         <div className="relative flex-1 overflow-auto">
           <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="p-6 lg:p-10 space-y-6 relative z-10 max-w-7xl mx-auto">
