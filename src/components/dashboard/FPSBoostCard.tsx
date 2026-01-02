@@ -29,14 +29,11 @@ export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
               <Zap className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-lg">FPS Boost</CardTitle>
+              <CardTitle className="text-lg">Otimização avançada</CardTitle>
               <CardDescription>Otimizações de registro para aumentar FPS</CardDescription>
             </div>
           </div>
-          <div className="glow-pill">
-            <span className="glow-dot" />
-            <span className="text-[11px] text-muted-foreground">Registro</span>
-          </div>
+  
         </div>
       </CardHeader>
       <CardContent className="space-y-5 flex-1 flex flex-col">

@@ -1,4 +1,4 @@
-import { UserBadge } from './UserBadge';
+import { UserBadge } from "./UserBadge";
 
 interface User {
   id: string;
@@ -15,25 +15,25 @@ interface DashboardHeaderProps {
 
 const tabTitles = {
   optimizations: {
-    title: 'Otimizações',
-    description: 'Selecione o nível de ajustes e aplique melhorias'
+    title: "Otimizações",
+    description: "Selecione o nível de ajustes e aplique melhorias",
   },
   utilities: {
-    title: 'Utilitários',
-    description: 'Ferramentas adicionais para rede, GPU e manutenção'
+    title: "Utilitários",
+    description: "Ferramentas adicionais para rede, GPU e manutenção",
   },
   status: {
-    title: 'Status do Sistema',
-    description: 'Monitore o desempenho em tempo real'
+    title: "Status do Sistema",
+    description: "Monitore o desempenho em tempo real",
   },
   config: {
-    title: 'Configurações',
-    description: 'Personalize suas preferências'
+    title: "Configurações",
+    description: "Personalize suas preferências",
   },
   profile: {
-    title: 'Perfil',
-    description: 'Informações da sua conta'
-  }
+    title: "Perfil",
+    description: "Informações da sua conta",
+  },
 };
 
 export function DashboardHeader({ activeTab, user }: DashboardHeaderProps) {
@@ -45,10 +45,10 @@ export function DashboardHeader({ activeTab, user }: DashboardHeaderProps) {
       <div className="flex items-start justify-between gap-4 flex-wrap relative z-10">
         <div className="space-y-2">
           <div className="glow-pill w-fit">
-           <span className="relative inline-flex">
-  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-</span>
+            <span className="relative inline-flex">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
             <span className="text-[11px] tracking-[0.08em] text-green-500">
               Sua sessão esta ativa
             </span>
