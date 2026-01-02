@@ -21,7 +21,12 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <div className="w-64 h-screen bg-card border-r border-border flex flex-col animate-slide-in-left">
+    <div className="w-64 h-screen border-r border-border flex flex-col animate-slide-in-left">
+ 
+       <img 
+    src='/gradient-1.png' 
+    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
+  />
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3 animate-fade-in-up">
           <div className="w-8 h-8 bg-foreground dark:bg-transparent rounded-md flex items-center justify-center overflow-hidden hover:scale-110 transition-transform duration-300">
@@ -37,7 +42,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             )}
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight">Synapse</h1>
+            <h1 className="text-lg font-medium">synapse</h1>
             <p className="text-xs text-muted-foreground">Performance</p>
           </div>
         </div>
@@ -55,7 +60,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium animate-fade-in-up hover:scale-[1.02]",
                 isActive
-                  ? "bg-secondary text-foreground shadow-sm"
+                  ? "border bg-white/10  border-[#6c6d6e] text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
               )}
               style={{ animationDelay: `${index * 50}ms` }}
@@ -68,6 +73,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       </nav>
 
       <div className="p-3 border-t border-border animate-fade-in" style={{ animationDelay: '300ms' }}>
+        
         <button
           onClick={logout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200 hover:scale-[1.02]"

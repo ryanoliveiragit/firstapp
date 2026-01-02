@@ -69,24 +69,24 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-gray-600/10 overflow-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
       <div className="flex-1 overflow-auto">
-        <div className="p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
-          <div className="animate-fade-in-up">
+       
+        <div className=" p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
+          <div className="animate-fade-in-up flex flex-col gap-4">
             <DashboardHeader activeTab={activeTab} user={user} />
+             <WarningBanner />
           </div>
 
           {activeTab === 'regedits' && (
-            <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              <WarningBanner />
+            <div className="max-w-lg space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
             </div>
           )}
 
           {activeTab === 'exec' && (
-            <div className="max-w-2xl animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="max-w-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
             </div>
           )}

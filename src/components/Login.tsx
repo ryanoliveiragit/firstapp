@@ -25,20 +25,18 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden ">
+     
+   <img 
+    src='/gradient-1.png' 
+    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
+  />
 
-      <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5" />
-
-      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
 
       <div className="relative z-10 w-full max-w-md px-4">
         <div className="space-y-8 animate-fade-in-up">
           <div className="text-center space-y-4 animate-scale-in">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-sm border border-primary/20 mb-4 animate-bounce-subtle hover:scale-110 transition-transform duration-300">
-              <Zap className="w-8 h-8 text-primary" strokeWidth={2.5} />
-            </div>
+
             <div className="space-y-2">
               <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent animate-fade-in">
                 Synapse
@@ -49,7 +47,7 @@ const Login = () => {
             </div>
           </div>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl animate-scale-in hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500" style={{ animationDelay: '200ms' }}>
+          <Card className=" backdrop-blur-xl shadow-2xl animate-scale-in hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500" style={{ animationDelay: '200ms' }}>
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</CardTitle>
               <CardDescription>
@@ -78,14 +76,7 @@ const Login = () => {
                 )}
               </Button>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Início de sessão seguro</span>
-                </div>
-              </div>
+  
 
               <p className="text-xs text-center text-muted-foreground">
                 Ao continuar, você concorda com nossos{" "}

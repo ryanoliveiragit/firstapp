@@ -1,3 +1,5 @@
+import { Card } from "../ui/card";
+
 interface User {
   id: string;
   username: string;
@@ -16,7 +18,7 @@ export function UserBadge({ user }: UserBadgeProps) {
     : `https://cdn.discordapp.com/embed/avatars/${user?.discriminator ? parseInt(user.discriminator) % 5 : 0}.png`;
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg">
+    <Card className="flex items-center gap-3 w-fit px-3 border border-white/25 rounded-lg py-2 backdrop-blur-sm  border-border/50">
       <img
         src={avatarUrl}
         alt="User avatar"
@@ -26,6 +28,6 @@ export function UserBadge({ user }: UserBadgeProps) {
         <p className="text-xs font-medium leading-none">{user?.username}</p>
         <p className="text-xs text-muted-foreground mt-0.5">Admin</p>
       </div>
-    </div>
+    </Card>
   );
 }

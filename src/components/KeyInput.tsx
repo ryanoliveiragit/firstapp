@@ -77,32 +77,15 @@ const KeyInput = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center  p-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="flex items-center justify-between p-3 bg-card border border-border rounded-md">
-          <div className="flex items-center gap-3">
-            <img
-              src={avatarUrl}
-              alt="User avatar"
-              className="w-8 h-8 rounded-full"
-            />
-            <div>
-              <p className="text-sm font-medium">{user?.username}</p>
-              <p className="text-xs text-muted-foreground">Discord</p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-secondary rounded-md"
-            title="Sair"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-
+              <img 
+    src='/gradient-1.png' 
+    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
+  />
         <Card className="border-border">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold tracking-tight">Ativar Licença</CardTitle>
+            <CardTitle className="text-2xl font-semibold tracking-tight">Insira sua chave de acesso</CardTitle>
             <p className="text-sm text-muted-foreground">
               Insira sua chave de acesso para continuar
             </p>
