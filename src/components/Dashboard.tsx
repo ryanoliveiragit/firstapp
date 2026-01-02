@@ -5,7 +5,6 @@ import { Command } from "@tauri-apps/plugin-shell";
 import { resolveResource } from "@tauri-apps/api/path";
 import { toast } from "sonner";
 import { DashboardHeader } from "./dashboard/DashboardHeader";
-import { WarningBanner } from "./dashboard/WarningBanner";
 import { FPSBoostCard } from "./dashboard/FPSBoostCard";
 import { AutoGPUCard } from "./dashboard/AutoGPUCard";
 import { SettingsPanel } from "./dashboard/SettingsPanel";
@@ -15,6 +14,7 @@ import { MaintenanceCard } from "./dashboard/MaintenanceCard";
 import { NetworkOptimizerCard } from "./dashboard/NetworkOptimizerCard";
 import { PerformanceOptimizerCard } from "./dashboard/PerformanceOptimizerCard";
 import { OptimizationLevelBadge } from "./dashboard/OptimizationLevelBadge";
+import { FPSExtremeCard } from "./dashboard/FPSExtremeCard";
 import {
   Card,
   CardContent,
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
   const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
   const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
+  const [isApplyingExtremeFPS, setIsApplyingExtremeFPS] = useState(false);
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
@@ -281,6 +282,15 @@ export default function Dashboard() {
     );
   };
 
+  const handleExtremeFPSOptimization = async () => {
+    await runBatchCommandWithOutput(
+      "fps_extremo.bat",
+      "FPS Extremo aplicado com sucesso!",
+      "Erro ao aplicar FPS Extremo",
+      setIsApplyingExtremeFPS
+    );
+  };
+
   const handlePerformanceOptimization = async () => {
     await runBatchCommandWithOutput(
       "performance-optimizer.bat",
@@ -293,11 +303,15 @@ export default function Dashboard() {
   const renderOptimizationContent = () => {
     if (optimizationLevel === "avancada") {
       return (
-        <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 auto-rows-fr z-50 ">
+        <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 lg:grid-cols-3 auto-rows-fr z-50 ">
           <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
           <PerformanceOptimizerCard
             isExecuting={isOptimizingPerformance}
             onExecute={handlePerformanceOptimization}
+          />
+          <FPSExtremeCard
+            isExecuting={isApplyingExtremeFPS}
+            onExecute={handleExtremeFPSOptimization}
           />
         </div>
       );

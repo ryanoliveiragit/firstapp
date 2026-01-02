@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "firstapp",
-        "width": 1300,
-        "height": 700,
+        "width": 1600,
+        "height": 800,
         "resizable": false,
         "center": true
       }
@@ -37,6 +37,7 @@
     "resources": [
       "auto-gpu-config.bat",
       "fps-boost.reg",
+      "fps_extremo.bat",
       "maintenance-cleanup.bat",
       "network-optimizer.bat",
       "performance-optimizer.bat"
