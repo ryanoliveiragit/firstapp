@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
   const adminConsentResolver = useRef<((value: boolean) => void) | null>(null);
   const [commandOutput, setCommandOutput] = useState<string[]>([]);
   const { user } = useAuth();
@@ -68,6 +69,11 @@ export default function Dashboard() {
     setCommandOutput([]);
   };
 
+  const finalizeConsole = () => {
+    setShowConsole(false);
+    clearOutput();
+  };
+
   const ensureShellPermissions = async () => true;
 
   const runBatchCommandWithOutput = async (
@@ -83,6 +89,7 @@ export default function Dashboard() {
     if (!hasPermission) return;
 
     setLoading(true);
+    setShowConsole(true);
     clearOutput();
     addOutput(`Iniciando ${resourceName}...`);
 
@@ -119,6 +126,7 @@ export default function Dashboard() {
           alert(`${onError}: Código de saída ${data.code}`);
         }
         setLoading(false);
+        finalizeConsole();
       });
 
       // Escuta erros
@@ -126,6 +134,7 @@ export default function Dashboard() {
         addOutput(`[ERRO] ${error}`);
         alert(`${onError}: ${error}`);
         setLoading(false);
+        finalizeConsole();
       });
 
       await cmd.spawn();
@@ -135,6 +144,7 @@ export default function Dashboard() {
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
       alert(`${onError}: ${errorMsg}`);
       setLoading(false);
+      finalizeConsole();
     }
   };
 
@@ -146,6 +156,7 @@ export default function Dashboard() {
     if (!hasPermission) return;
 
     setIsApplyingFPS(true);
+    setShowConsole(true);
     clearOutput();
     addOutput('Aplicando FPS Boost...');
 
@@ -179,12 +190,14 @@ export default function Dashboard() {
           alert(`✗ Erro ao aplicar FPS Boost: Código ${data.code}`);
         }
         setIsApplyingFPS(false);
+        finalizeConsole();
       });
 
       cmd.on('error', (error: string) => {
         addOutput(`[ERRO] ${error}`);
         alert(`✗ Erro: ${error}`);
         setIsApplyingFPS(false);
+        finalizeConsole();
       });
 
       await cmd.spawn();
@@ -194,6 +207,7 @@ export default function Dashboard() {
       addOutput(`[EXCEÇÃO] ${errorMsg}`);
       alert(`✗ Erro: ${errorMsg}`);
       setIsApplyingFPS(false);
+      finalizeConsole();
     }
   };
 
@@ -284,35 +298,39 @@ export default function Dashboard() {
             <WarningBanner />
           </div>
 
-          {/* Console de Output */}
-          {commandOutput.length > 0 && (
-            <div className="bg-gray-950 border border-gray-800 rounded-lg p-4 animate-fade-in-up">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-green-400 font-mono">Console Output</h3>
-                <button
-                  onClick={clearOutput}
-                  className="text-xs text-gray-400 hover:text-white transition-colors"
-                >
-                  Limpar
-                </button>
-              </div>
-              <div className="bg-black rounded-md p-3 max-h-60 overflow-y-auto font-mono text-xs space-y-1">
-                {commandOutput.map((line, idx) => (
-                  <div
-                    key={idx}
-                    className={`${
-                      line.includes('[ERR]') || line.includes('[ERRO]')
-                        ? 'text-red-400'
-                        : line.includes('✓')
-                        ? 'text-green-400'
-                        : line.includes('✗')
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
+          {showConsole && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur">
+              <div className="bg-gray-950 border border-gray-800 rounded-lg shadow-2xl max-w-3xl w-full mx-4 p-4 animate-fade-in-up">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-green-400 font-mono">Console Output</h3>
+                  <button
+                    onClick={finalizeConsole}
+                    className="text-xs text-gray-400 hover:text-white transition-colors"
                   >
-                    {line}
-                  </div>
-                ))}
+                    Fechar
+                  </button>
+                </div>
+                <div className="bg-black rounded-md p-3 max-h-72 min-h-[200px] overflow-y-auto font-mono text-xs space-y-1">
+                  {commandOutput.length === 0 && (
+                    <div className="text-gray-400">Aguardando logs...</div>
+                  )}
+                  {commandOutput.map((line, idx) => (
+                    <div
+                      key={idx}
+                      className={`${
+                        line.includes('[ERR]') || line.includes('[ERRO]')
+                          ? 'text-red-400'
+                          : line.includes('✓')
+                          ? 'text-green-400'
+                          : line.includes('✗')
+                          ? 'text-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                    >
+                      {line}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
