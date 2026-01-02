@@ -357,7 +357,6 @@ export default function Dashboard() {
           <div className="p-6 lg:p-10 space-y-6 relative z-10 max-w-7xl mx-auto">
             <div className="animate-fade-in-up flex flex-col gap-4">
               <DashboardHeader activeTab={activeTab} user={user} />
-              <WarningBanner />
             </div>
 
             {showConsole && (
