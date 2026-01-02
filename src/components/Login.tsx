@@ -7,112 +7,113 @@ const Login = () => {
   const { login } = useAuth();
 
   return (
-    <div className="flex min-h-screen overflow-hidden bg-black">
+    <div className="flex min-h-screen overflow-hidden bg-background">
       {/* Scan line effect */}
       <div className="scan-line" />
 
-      {/* Left Side - Dashboard Preview with Red Gradient */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Intense red gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-red-900 to-black" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+      {/* Left Side - Dashboard Preview */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-background">
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
 
-        {/* Animated particles/dots */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-20 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-          <div className="absolute top-40 right-32 w-1 h-1 bg-red-300 rounded-full animate-ping" />
-          <div className="absolute bottom-32 left-40 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          <div className="absolute top-60 left-1/3 w-1 h-1 bg-white rounded-full animate-ping" />
+        {/* Animated particles */}
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-20 left-20 w-2 h-2 bg-primary rounded-full animate-pulse" />
+          <div className="absolute top-40 right-32 w-1 h-1 bg-primary/60 rounded-full animate-ping" />
+          <div className="absolute bottom-32 left-40 w-2 h-2 bg-primary/80 rounded-full animate-pulse delay-150" />
+          <div className="absolute top-60 left-1/3 w-1 h-1 bg-foreground rounded-full animate-ping delay-300" />
         </div>
 
-        {/* Dashboard Preview in 3D Perspective */}
+        {/* Dashboard Preview */}
         <div className="relative z-10 w-full h-full flex items-center justify-center p-12">
-          <div className="w-full max-w-md transform perspective-1000 -rotate-y-12" style={{ transform: 'perspective(1000px) rotateY(-15deg)' }}>
+          <div className="w-full max-w-md transform perspective-1000" style={{ transform: 'perspective(1000px) rotateY(-12deg)' }}>
 
             {/* Sidebar Preview */}
-            <div className="bg-gradient-to-br from-black/90 to-black/70 backdrop-blur-xl rounded-l-2xl border-l border-t border-b border-red-900/30 p-6 shadow-2xl">
+            <div className="bg-card/90 backdrop-blur-xl rounded-l-2xl border-l border-t border-b border-border shadow-2xl p-6">
               {/* Logo */}
-              <div className="flex items-center gap-3 mb-8 pb-6 border-b border-red-900/30">
-                <div className="w-10 h-10 bg-red-600/20 rounded-lg flex items-center justify-center glow-red">
-                  <Activity className="w-6 h-6 text-red-500" />
+              <div className="flex items-center gap-3 mb-8 pb-6 border-b border-border">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center ring-1 ring-primary/20">
+                  <Activity className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-white text-lg">Paragon</h2>
-                  <p className="text-xs text-red-400">Tweaking Utility</p>
+                  <h2 className="font-bold text-foreground text-lg">Paragon</h2>
+                  <p className="text-xs text-muted-foreground">Tweaking Utility</p>
                 </div>
               </div>
 
               {/* Menu Items */}
               <div className="space-y-2">
-                <div className="flex items-center gap-3 px-4 py-3 bg-red-600/90 rounded-lg glow-red">
-                  <Home className="w-5 h-5 text-white" />
-                  <span className="text-white font-medium text-sm">Home</span>
+                <div className="flex items-center gap-3 px-4 py-3 bg-primary rounded-lg shadow-lg shadow-primary/20">
+                  <Home className="w-5 h-5 text-primary-foreground" />
+                  <span className="text-primary-foreground font-medium text-sm">Home</span>
                 </div>
-                <div className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white transition-colors">
+                <div className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-all duration-200">
                   <Activity className="w-5 h-5" />
                   <span className="font-medium text-sm">System Restore</span>
                 </div>
-                <div className="flex items-center gap-3 px-4 py-3 text-gray-500">
+                <div className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-secondary rounded-lg transition-all duration-200">
                   <HardDrive className="w-5 h-5" />
                   <span className="font-medium text-sm">Resources</span>
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="my-6 border-t border-red-900/20" />
+              <div className="my-6 border-t border-border" />
 
               {/* Tweaks Section */}
               <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase px-4 mb-3">Tweaks</p>
-                <div className="flex items-center gap-3 px-4 py-2 text-gray-500">
+                <p className="text-xs text-muted-foreground uppercase px-4 mb-3 font-semibold tracking-wider">Tweaks</p>
+                <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors">
                   <Cpu className="w-4 h-4" />
                   <span className="text-xs">General</span>
                 </div>
-                <div className="flex items-center gap-3 px-4 py-2 text-gray-600">
+                <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors">
                   <Settings className="w-4 h-4" />
                   <span className="text-xs">Debloating</span>
                 </div>
               </div>
             </div>
 
-            {/* Main Content Preview - Positioned to the right */}
+            {/* Main Content Preview */}
             <div className="absolute top-12 -right-32 w-80 space-y-4">
               {/* Welcome Card */}
-              <div className="bg-gradient-to-br from-black/80 to-black/60 backdrop-blur-xl rounded-2xl border border-red-900/20 p-6 shadow-2xl">
+              <div className="bg-card/90 backdrop-blur-xl rounded-2xl border border-border shadow-2xl p-6 hover:border-primary/50 transition-all duration-300">
                 <div className="flex items-center gap-3 mb-4">
-                  <Home className="w-5 h-5 text-red-500" />
-                  <span className="text-white font-semibold">Home</span>
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Home className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-foreground font-semibold">Home</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 text-glow">Welcome to Paragon</h3>
-                <p className="text-sm text-gray-400">Performance, Optimization, and</p>
+                <h3 className="text-xl font-bold text-foreground mb-2 text-glow">Welcome to Paragon</h3>
+                <p className="text-sm text-muted-foreground">Performance, Optimization, and Control</p>
               </div>
 
               {/* CPU Usage Card */}
-              <div className="bg-gradient-to-br from-black/80 to-black/60 backdrop-blur-xl rounded-2xl border border-red-900/20 p-6 shadow-2xl">
-                <div className="flex items-center justify-between mb-2">
+              <div className="bg-card/90 backdrop-blur-xl rounded-2xl border border-border shadow-2xl p-6 hover:border-primary/50 transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-red-600/20 rounded-xl flex items-center justify-center">
-                      <Gauge className="w-6 h-6 text-red-500" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center ring-1 ring-primary/20">
+                      <Gauge className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 uppercase">CPU Usage</p>
+                      <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">CPU Usage</p>
+                      <p className="text-2xl font-bold text-foreground mt-1">13%</p>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-bold text-white text-glow">13%</p>
                   </div>
                 </div>
                 {/* Progress bar */}
-                <div className="w-full h-2 bg-gray-800 rounded-full mt-4 overflow-hidden">
-                  <div className="h-full w-[13%] bg-gradient-to-r from-red-600 to-red-500 rounded-full glow-red" />
+                <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full w-[13%] bg-gradient-to-r from-primary to-primary/80 rounded-full shadow-lg shadow-primary/50 transition-all duration-500" />
                 </div>
               </div>
 
               {/* Temperature Monitor */}
-              <div className="bg-gradient-to-br from-black/80 to-black/60 backdrop-blur-xl rounded-2xl border border-red-900/20 p-4 shadow-2xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-400">Temperature Monitor</span>
+              <div className="bg-card/90 backdrop-blur-xl rounded-2xl border border-border shadow-2xl p-4 hover:border-primary/50 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground font-medium">Temperature Monitor</span>
                 </div>
               </div>
             </div>
@@ -121,50 +122,51 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 relative flex items-center justify-center bg-gradient-to-br from-black via-gray-950 to-black">
+      <div className="w-full lg:w-1/2 relative flex items-center justify-center bg-gradient-to-br from-background via-background to-card">
         {/* Subtle grid background */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(rgba(220, 38, 38, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(220, 38, 38, 0.3) 1px, transparent 1px)',
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: 'linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)',
           backgroundSize: '50px 50px'
         }} />
 
         <div className="relative z-10 w-full max-w-md px-8">
           {/* Welcome Badge */}
-          <div className="flex justify-center mb-6">
-            <div className="px-4 py-1.5 bg-red-950/30 border border-red-900/50 rounded-full">
-              <span className="text-xs font-semibold text-red-500 uppercase tracking-wider">Welcome to:</span>
+          <div className="flex justify-center mb-8 animate-fade-in">
+            <div className="px-4 py-2 bg-primary/5 border border-primary/20 rounded-full backdrop-blur-sm">
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Welcome to</span>
             </div>
           </div>
 
           {/* Title */}
-          <h1 className="text-5xl font-bold text-white text-center mb-12 text-glow">
-            Paragon Tweaking Utility
+          <h1 className="text-5xl font-bold text-foreground text-center mb-12 text-glow animate-fade-in-up">
+            Paragon
+            <span className="block text-2xl font-normal text-muted-foreground mt-2">Tweaking Utility</span>
           </h1>
 
           {/* Login Card */}
-          <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-gray-800/50 shadow-2xl overflow-hidden">
-            <CardHeader className="space-y-1 pb-4 border-b border-gray-800/50">
-              <CardTitle className="text-center flex items-center justify-center gap-2 text-gray-200">
-                <div className="w-10 h-10 bg-gray-800/50 rounded-lg flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-400" />
+          <Card className="bg-card/80 backdrop-blur-xl border-border shadow-2xl overflow-hidden animate-fade-in-up hover:shadow-primary/5 transition-all duration-300">
+            <CardHeader className="space-y-1 pb-6 border-b border-border">
+              <CardTitle className="text-center flex items-center justify-center gap-3 text-foreground">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center ring-1 ring-primary/20">
+                  <User className="w-5 h-5 text-primary" />
                 </div>
-                Log in
+                <span className="text-xl">Log in</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="mb-6">
-                <p className="text-sm text-gray-400 text-center">
+            <CardContent className="pt-6 pb-8">
+              <div className="mb-8">
+                <p className="text-sm text-muted-foreground text-center leading-relaxed">
                   Faça login com sua conta Discord para acessar o painel de controle
                 </p>
               </div>
 
               <Button
                 onClick={login}
-                className="w-full h-14 text-base font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20"
+                className="w-full h-14 text-base font-semibold bg-[#5865F2] hover:bg-[#4752C4] text-white shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/30 transition-all duration-200 group"
                 size="lg"
               >
                 <svg
-                  className="w-6 h-6 mr-3"
+                  className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -173,12 +175,22 @@ const Login = () => {
                 </svg>
                 Log in with Discord
               </Button>
+
+              {/* Additional info */}
+              <div className="mt-6 text-center">
+                <p className="text-xs text-muted-foreground">
+                  Ao fazer login, você concorda com nossos{' '}
+                  <button className="text-primary hover:underline font-medium">Termos de Uso</button>
+                </p>
+              </div>
             </CardContent>
           </Card>
 
           {/* Version Footer */}
-          <div className="absolute bottom-8 right-8">
-            <p className="text-xs text-gray-600">v1.4.6</p>
+          <div className="flex justify-center mt-8">
+            <div className="px-4 py-1.5 bg-card/50 backdrop-blur-sm border border-border rounded-full">
+              <p className="text-xs text-muted-foreground font-medium">Version 1.4.6</p>
+            </div>
           </div>
         </div>
       </div>
