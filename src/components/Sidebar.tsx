@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileKey, Settings, User, LogOut, Zap, Activity } from 'lucide-react';
+import { FileKey, FileCode2, Settings, User, LogOut, Zap, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -10,6 +10,7 @@ interface SidebarProps {
 
 const menuItems = [
   { id: 'optimizations', label: 'Otimizações', icon: FileKey },
+  { id: 'utilities', label: 'Utilitários', icon: FileCode2 },
   { id: 'status', label: 'Status', icon: Activity },
   { id: 'config', label: 'Configurações', icon: Settings },
   { id: 'profile', label: 'Perfil', icon: User },

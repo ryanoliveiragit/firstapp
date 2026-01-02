@@ -18,6 +18,10 @@ const tabTitles = {
     title: 'Otimizações',
     description: 'Selecione o nível de ajustes e aplique melhorias'
   },
+  utilities: {
+    title: 'Utilitários',
+    description: 'Ferramentas adicionais para rede, GPU e manutenção'
+  },
   status: {
     title: 'Status do Sistema',
     description: 'Monitore o desempenho em tempo real'

@@ -261,26 +261,12 @@ export default function Dashboard() {
     if (optimizationLevel === 'avancada') {
       return (
         <>
-          <div
-            className="max-w-2xl space-y-4 animate-fade-in-up"
-            style={{ animationDelay: '100ms' }}
-          >
+          <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 auto-rows-fr" style={{ animationDelay: '120ms' }}>
             <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
-          </div>
-          <div
-            className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
-            style={{ animationDelay: '150ms' }}
-          >
-            <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
             <PerformanceOptimizerCard
               isExecuting={isOptimizingPerformance}
               onExecute={handlePerformanceOptimization}
             />
-            <NetworkOptimizerCard
-              isExecuting={isOptimizingNetwork}
-              onExecute={handleNetworkOptimization}
-            />
-            <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
           </div>
         </>
       );
@@ -443,6 +429,20 @@ export default function Dashboard() {
                 </Card>
 
                 {renderOptimizationContent()}
+              </div>
+            )}
+
+            {activeTab === 'utilities' && (
+              <div
+                className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
+                style={{ animationDelay: '100ms' }}
+              >
+                <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
+                <NetworkOptimizerCard
+                  isExecuting={isOptimizingNetwork}
+                  onExecute={handleNetworkOptimization}
+                />
+                <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
               </div>
             )}
 
