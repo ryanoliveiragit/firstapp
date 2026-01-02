@@ -36,9 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const REDIRECT_URI = import.meta.env.VITE_DISCORD_REDIRECT_URI;
 
   useEffect(() => {
+    let isMounted = true;
+
     // Check if user is already logged in (from localStorage)
     const savedUser = localStorage.getItem('discord_user');
     const savedKey = localStorage.getItem('license_key');
+    const savedToken = localStorage.getItem('discord_token');
 
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -46,7 +49,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (savedKey) {
       setLicenseKeyState(savedKey);
     }
-    setIsLoading(false);
+
+    const fetchUserData = async (accessToken: string, cleanHash = false) => {
+      try {
+        const response = await fetch('https://discord.com/api/users/@me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const userData: DiscordUser = await response.json();
+          if (!isMounted) return;
+
+          setUser(userData);
+          localStorage.setItem('discord_user', JSON.stringify(userData));
+          localStorage.setItem('discord_token', accessToken);
+
+          if (cleanHash) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
 
     // Handle OAuth callback
     const handleCallback = async () => {
@@ -55,30 +82,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const accessToken = params.get('access_token');
 
       if (accessToken) {
-        try {
-          // Fetch user data from Discord API
-          const response = await fetch('https://discord.com/api/users/@me', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
+        await fetchUserData(accessToken, true);
+        return;
+      }
 
-          if (response.ok) {
-            const userData: DiscordUser = await response.json();
-            setUser(userData);
-            localStorage.setItem('discord_user', JSON.stringify(userData));
-            localStorage.setItem('discord_token', accessToken);
-
-            // Clean up URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
+      if (!savedUser && savedToken) {
+        await fetchUserData(savedToken);
       }
     };
 
-    handleCallback();
+    handleCallback().finally(() => {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = () => {

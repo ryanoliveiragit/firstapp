@@ -12,11 +12,15 @@ Este projeto utiliza OAuth2 do Discord para autenticação. Siga os passos abaix
 ## 2. Configurar OAuth2
 
 1. No menu lateral, clique em "OAuth2"
-2. Em "Redirects", adicione a URL de callback:
+2. Em "Redirects", adicione a URL de callback (ambiente local):
    ```
-   http://localhost:1420/callback
+   http://localhost:1420/callback.html
    ```
 3. Clique em "Save Changes"
+4. Para produção, adicione também a URL de produção, por exemplo:
+   ```
+   https://seu-dominio.com/callback.html
+   ```
 
 ## 3. Obter Client ID
 
@@ -33,8 +37,12 @@ Este projeto utiliza OAuth2 do Discord para autenticação. Siga os passos abaix
 2. Edite o arquivo `.env` e substitua os valores:
    ```env
    VITE_DISCORD_CLIENT_ID=seu_client_id_aqui
-   VITE_DISCORD_REDIRECT_URI=http://localhost:1420/callback
+   VITE_DISCORD_REDIRECT_URI=http://localhost:1420/callback.html
    ```
+
+3. Para build/produção:
+   - Apps web: ajuste o `.env.production` para apontar para o domínio final, por exemplo `VITE_DISCORD_REDIRECT_URI=https://seu-dominio.com/callback.html` e rode `npm run build` com essa env.
+   - **Apps desktop (Tauri):** o Discord **não** aceita esquemas customizados (`tauri://`). Cadastre um redirect HTTPS real (ex.: `https://seu-dominio.com/callback.html`) no Discord Developer Portal e configure a mesma URL em `VITE_DISCORD_REDIRECT_URI` no momento do build. A página `callback.html` (servida por esse domínio) irá redirecionar o token de volta para `tauri://localhost/#...` para o app desktop.
 
 ## 5. Executar a Aplicação
 
@@ -63,5 +71,13 @@ A autenticação usa o fluxo OAuth2 Implicit Grant:
 
 Para produção, você precisará:
 - Configurar as variáveis de ambiente no servidor
-- Atualizar a REDIRECT_URI para o domínio de produção
+- Atualizar a REDIRECT_URI para o domínio de produção (HTTPS que você registrou no Discord Developer Portal)
 - Adicionar a nova URL de redirect no Discord Developer Portal
+
+### Erro comum: "`tauri://localhost/callback.html` is not supported by client"
+- O Discord bloqueia redirecionamentos com esquemas customizados. Use sempre uma URL `https://.../callback.html` cadastrada no Discord Developer Portal.
+- No desktop, essa URL deve servir o arquivo `public/callback.html` (via hospedagem estática) para que ele possa rebater o token para `tauri://localhost/#...`.
+
+## Página de callback no build
+
+O arquivo `public/callback.html` persiste o `access_token` retornado pelo Discord no `localStorage` (quando servido por http/https) e redireciona para `/`. Em builds desktop, ele dá um bounce para `tauri://localhost/#...`, permitindo que o app capture o token mesmo usando um redirect HTTPS aceito pelo Discord. Certifique-se de que a URL configurada em `VITE_DISCORD_REDIRECT_URI` aponte para essa página hospedada em um domínio https válido.
