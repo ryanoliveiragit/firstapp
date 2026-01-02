@@ -38,7 +38,7 @@ export function DashboardHeader({ activeTab, user }: DashboardHeaderProps) {
   return (
     <div className="flex items-start justify-between">
       <div className="space-y-1">
-        <h1 className="text-2xl lg:text-3xl font-bold text-glow tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">
           {currentTab?.title}
         </h1>
         <p className="text-sm text-muted-foreground">

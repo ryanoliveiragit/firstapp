@@ -15,12 +15,6 @@ export default function Dashboard() {
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
   const { user } = useAuth();
-  const [settings, setSettings] = useState({
-    darkMode: true,
-    animations: true,
-    autoStart: false,
-    notifications: true,
-  });
 
   const handleFPSBoost = async () => {
     setIsApplyingFPS(true);
@@ -73,13 +67,8 @@ export default function Dashboard() {
     }
   };
 
-  const toggleSetting = (key: keyof typeof settings) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
   return (
-    <div className="flex h-screen bg-background grid-background overflow-hidden">
-      <div className="scan-line" />
+    <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <div className="flex-1 overflow-auto">
@@ -100,7 +89,7 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'config' && (
-            <SettingsPanel settings={settings} onToggleSetting={toggleSetting} />
+            <SettingsPanel />
           )}
 
           {activeTab === 'profile' && (
