@@ -22,17 +22,6 @@
       "capabilities": ["default"]
     }
   },
-  "plugins": {
-    "shell": {
-      "scope": [
-        {
-          "name": "run-bat",
-          "cmd": "cmd",
-          "args": ["/C", "{args}"]
-        }
-      ]
-    }
-  },
   "bundle": {
     "active": true,
     "targets": "all",
