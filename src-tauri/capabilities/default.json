@@ -11,13 +11,10 @@
       "allow": [
         {
           "name": "run-bat",
-          "cmd": "powershell",
+          "cmd": "cmd",
           "args": [
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-File",
-            { "validator": "\\S+" }
+            "/C",
+            { "validator": "^.+$" }
           ]
         }
       ]

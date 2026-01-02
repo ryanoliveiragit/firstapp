@@ -14,11 +14,24 @@
       {
         "title": "firstapp",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "capabilities": ["default"]
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": ["default"]
+    },
+    "plugins": {
+      "shell": {
+        "scope": [
+          {
+            "name": "run-bat",
+            "cmd": "cmd",
+            "args": ["/C", "{args}"]
+          }
+        ]
+      }
     }
   },
   "bundle": {
@@ -32,7 +45,7 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "auto-gpu-config.ps1.cmd"
+      "auto-gpu-config.bat"
     ]
   }
 }
