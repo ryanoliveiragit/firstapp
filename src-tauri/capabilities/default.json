@@ -23,6 +23,19 @@
           ]
         },
         {
+          "name": "powershell-elevated",
+          "cmd": "powershell",
+          "args": [
+            "-Command",
+            "Start-Process",
+            "cmd.exe",
+            "-Verb",
+            "RunAs",
+            "-ArgumentList",
+            { "validator": "^/C .+$" }
+          ]
+        },
+        {
           "name": "regedit-start",
           "cmd": "cmd",
           "args": [

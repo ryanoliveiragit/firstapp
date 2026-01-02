@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from './Sidebar';
 import { Command } from '@tauri-apps/plugin-shell';
@@ -10,24 +10,112 @@ import { AutoGPUCard } from './dashboard/AutoGPUCard';
 import { SettingsPanel } from './dashboard/SettingsPanel';
 import { ProfilePanel } from './dashboard/ProfilePanel';
 import { StatusPanel } from './dashboard/StatusPanel';
+import { MaintenanceCard } from './dashboard/MaintenanceCard';
+import { NetworkOptimizerCard } from './dashboard/NetworkOptimizerCard';
+import { PerformanceOptimizerCard } from './dashboard/PerformanceOptimizerCard';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('regedits');
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApplyingFPS, setIsApplyingFPS] = useState(false);
+  const [isRunningMaintenance, setIsRunningMaintenance] = useState(false);
+  const [isOptimizingNetwork, setIsOptimizingNetwork] = useState(false);
+  const [isOptimizingPerformance, setIsOptimizingPerformance] = useState(false);
+  const [hasAdminConsent, setHasAdminConsent] = useState(false);
   const { user } = useAuth();
 
+  const requestAdminPermission = async () => {
+    if (hasAdminConsent) return true;
+
+    const confirmElevation = window.confirm(
+      'Precisamos de permissão de administrador para aplicar otimizações. Clique em OK e aceite o prompt do Windows.'
+    );
+
+    if (!confirmElevation) {
+      return false;
+    }
+
+    try {
+      const elevatedArg = '/C "echo admin-ready"';
+      const output = await Command.create('powershell-elevated', [
+        '-Command',
+        'Start-Process',
+        'cmd.exe',
+        '-Verb',
+        'RunAs',
+        '-ArgumentList',
+        elevatedArg,
+      ]).execute();
+
+      if (output.code === 0) {
+        setHasAdminConsent(true);
+        return true;
+      }
+
+      alert('Não foi possível confirmar a permissão de administrador.');
+      return false;
+    } catch (error) {
+      alert(`Erro ao solicitar permissão: ${error}`);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    void requestAdminPermission();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const runBatchCommand = async (
+    resourceName: string,
+    onSuccess: string,
+    onError: string,
+    setLoading: (value: boolean) => void
+  ) => {
+    const hasPermission = await requestAdminPermission();
+    if (!hasPermission) return;
+
+    setLoading(true);
+    try {
+      const batchPath = await resolveResource(resourceName);
+      const elevatedArg = `/C "call \\"${batchPath}\\""`;
+      const output = await Command.create('powershell-elevated', [
+        '-Command',
+        'Start-Process',
+        'cmd.exe',
+        '-Verb',
+        'RunAs',
+        '-ArgumentList',
+        elevatedArg,
+      ]).execute();
+
+      if (output.code === 0) {
+        alert(onSuccess);
+      } else {
+        alert(`${onError}: ${output.stderr || 'Código de saída diferente de zero.'}`);
+      }
+    } catch (error) {
+      alert(`${onError}: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFPSBoost = async () => {
+    const hasPermission = await requestAdminPermission();
+    if (!hasPermission) return;
+
     setIsApplyingFPS(true);
     try {
       const regPath = await resolveResource('fps-boost.reg');
-      const output = await Command.create('regedit-start', [
-        '/C',
-        'start',
-        '',
+      const elevatedArg = `/s \\"${regPath}\\"`;
+      const output = await Command.create('powershell-elevated', [
+        '-Command',
+        'Start-Process',
         'regedit.exe',
-        '/s',
-        regPath,
+        '-Verb',
+        'RunAs',
+        '-ArgumentList',
+        elevatedArg,
       ]).execute();
 
       if (output.code === 0) {
@@ -43,29 +131,39 @@ export default function Dashboard() {
   };
 
   const handleAutoGPU = async () => {
-    setIsExecuting(true);
-    try {
-      const batchPath = await resolveResource('auto-gpu-config.bat');
-      const output = await Command.create('cmd', [
-        '/C',
-        'start',
-        '',
-        'cmd.exe',
-        '/C',
-        'call',
-        batchPath,
-      ]).execute();
+    await runBatchCommand(
+      'auto-gpu-config.bat',
+      '✓ GPU configurada com sucesso!',
+      '✗ Erro ao configurar GPU',
+      setIsExecuting
+    );
+  };
 
-      if (output.code === 0) {
-        alert('✓ GPU configurada com sucesso!');
-      } else {
-        alert(`✗ Erro ao configurar GPU: ${output.stderr || 'Código de saída diferente de zero.'}`);
-      }
-    } catch (error) {
-      alert(`✗ Erro: ${error}`);
-    } finally {
-      setIsExecuting(false);
-    }
+  const handleMaintenance = async () => {
+    await runBatchCommand(
+      'maintenance-cleanup.bat',
+      '✓ Limpeza concluída com sucesso!',
+      '✗ Erro ao executar limpeza',
+      setIsRunningMaintenance
+    );
+  };
+
+  const handleNetworkOptimization = async () => {
+    await runBatchCommand(
+      'network-optimizer.bat',
+      '✓ Otimizações de rede aplicadas!',
+      '✗ Erro ao otimizar rede',
+      setIsOptimizingNetwork
+    );
+  };
+
+  const handlePerformanceOptimization = async () => {
+    await runBatchCommand(
+      'performance-optimizer.bat',
+      '✓ Ajustes de desempenho aplicados!',
+      '✗ Erro ao aplicar ajustes',
+      setIsOptimizingPerformance
+    );
   };
 
   return (
@@ -86,8 +184,14 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'exec' && (
-            <div className="max-w-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div
+              className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
+              style={{ animationDelay: '100ms' }}
+            >
               <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
+              <PerformanceOptimizerCard isExecuting={isOptimizingPerformance} onExecute={handlePerformanceOptimization} />
+              <NetworkOptimizerCard isExecuting={isOptimizingNetwork} onExecute={handleNetworkOptimization} />
+              <MaintenanceCard isExecuting={isRunningMaintenance} onExecute={handleMaintenance} />
             </div>
           )}
 
