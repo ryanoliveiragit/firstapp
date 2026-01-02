@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Key, AlertCircle, Loader2, LogOut } from 'lucide-react';
+import { AlertCircle, Loader2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 const VALID_KEY = '123123123123';

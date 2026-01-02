@@ -74,31 +74,39 @@ export default function Dashboard() {
 
       <div className="flex-1 overflow-auto">
         <div className="p-6 lg:p-8 space-y-6 relative z-10 max-w-7xl mx-auto">
-          <DashboardHeader activeTab={activeTab} user={user} />
+          <div className="animate-fade-in-up">
+            <DashboardHeader activeTab={activeTab} user={user} />
+          </div>
 
           {activeTab === 'regedits' && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <WarningBanner />
               <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
             </div>
           )}
 
           {activeTab === 'exec' && (
-            <div className="max-w-2xl">
+            <div className="max-w-2xl animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <AutoGPUCard isExecuting={isExecuting} onExecute={handleAutoGPU} />
             </div>
           )}
 
           {activeTab === 'status' && (
-            <StatusPanel />
+            <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <StatusPanel />
+            </div>
           )}
 
           {activeTab === 'config' && (
-            <SettingsPanel />
+            <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <SettingsPanel />
+            </div>
           )}
 
           {activeTab === 'profile' && (
-            <ProfilePanel user={user} />
+            <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <ProfilePanel user={user} />
+            </div>
           )}
         </div>
       </div>

@@ -18,22 +18,22 @@ export function SettingsPanel() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
+      <div className="animate-fade-in">
         <h2 className="text-lg font-semibold mb-1">Preferências</h2>
         <p className="text-sm text-muted-foreground">Gerencie as configurações do aplicativo</p>
       </div>
 
-      <Card>
+      <Card className="card-hover animate-scale-in" style={{ animationDelay: '100ms' }}>
         <CardContent className="p-6 space-y-6">
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">Aparência</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/5 transition-colors">
+              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/5 transition-all duration-300 hover:scale-[1.02] animate-fade-in-up" style={{ animationDelay: '150ms' }}>
                 <div className="flex items-center gap-3">
                   {theme === 'dark' ? (
-                    <Moon className="w-4 h-4 text-muted-foreground" />
+                    <Moon className="w-4 h-4 text-muted-foreground transition-transform hover:rotate-12" />
                   ) : (
-                    <Sun className="w-4 h-4 text-muted-foreground" />
+                    <Sun className="w-4 h-4 text-muted-foreground transition-transform hover:rotate-90" />
                   )}
                   <div>
                     <p className="text-sm font-medium">Tema</p>
@@ -45,7 +45,7 @@ export function SettingsPanel() {
                 <Toggle checked={theme === 'dark'} onChange={toggleTheme} />
               </div>
 
-              <div className="p-3 rounded-md border bg-card space-y-3">
+              <div className="p-3 rounded-md border bg-card space-y-3 hover:bg-accent/5 transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                 <div className="flex items-center gap-3">
                   <Palette className="w-4 h-4 text-muted-foreground" />
                   <div>
@@ -79,9 +79,9 @@ export function SettingsPanel() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/5 transition-colors">
+              <div className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-accent/5 transition-all duration-300 hover:scale-[1.02] animate-fade-in-up" style={{ animationDelay: '250ms' }}>
                 <div className="flex items-center gap-3">
-                  <Sparkles className="w-4 h-4 text-muted-foreground" />
+                  <Sparkles className="w-4 h-4 text-muted-foreground transition-transform hover:scale-110" />
                   <div>
                     <p className="text-sm font-medium">Animações</p>
                     <p className="text-xs text-muted-foreground">

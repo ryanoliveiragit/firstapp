@@ -35,21 +35,21 @@ const Login = () => {
 
       <div className="relative z-10 w-full max-w-md px-4">
         <div className="space-y-8 animate-fade-in-up">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-sm border border-primary/20 mb-4">
+          <div className="text-center space-y-4 animate-scale-in">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-sm border border-primary/20 mb-4 animate-bounce-subtle hover:scale-110 transition-transform duration-300">
               <Zap className="w-8 h-8 text-primary" strokeWidth={2.5} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent animate-fade-in">
                 Synapse
               </h1>
-              <p className="text-muted-foreground max-w-sm mx-auto">
+              <p className="text-muted-foreground max-w-sm mx-auto animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 Plataforma inteligente para otimização de performance e tweaking avançado
               </p>
             </div>
           </div>
 
-          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl animate-scale-in hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500" style={{ animationDelay: '200ms' }}>
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</CardTitle>
               <CardDescription>
@@ -60,7 +60,7 @@ const Login = () => {
               <Button
                 onClick={handleDiscordLogin}
                 disabled={discordLoading}
-                className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white shadow-lg shadow-[#5865F2]/20"
+                className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white shadow-lg shadow-[#5865F2]/20 button-hover"
                 size="lg"
               >
                 {discordLoading ? (
@@ -100,7 +100,7 @@ const Login = () => {
             </CardContent>
           </Card>
 
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '400ms' }}>
             <div className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <span>Todos os sistemas operacionais</span>

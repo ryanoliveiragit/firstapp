@@ -15,10 +15,10 @@ const features = [
 
 export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
   return (
-    <Card>
+    <Card className="card-hover animate-scale-in">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-secondary rounded-md">
+          <div className="p-2 bg-secondary rounded-md transition-transform duration-300 hover:scale-110">
             <Gauge className="w-5 h-5" />
           </div>
           <div>
@@ -30,8 +30,8 @@ export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
       <CardContent className="space-y-4">
         <ul className="space-y-2">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
+              <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-500" />
               <span>{feature}</span>
             </li>
           ))}
@@ -39,7 +39,7 @@ export function FPSBoostCard({ isApplying, onApply }: FPSBoostCardProps) {
         <Button
           onClick={onApply}
           disabled={isApplying}
-          className="w-full"
+          className="w-full button-hover"
           size="lg"
         >
           {isApplying ? (

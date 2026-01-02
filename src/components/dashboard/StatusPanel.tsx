@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Cpu, MemoryStick, Gauge } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
 interface SystemStats {
   cpu: number;
@@ -58,12 +59,29 @@ export function StatusPanel() {
   const [stats, setStats] = useState<SystemStats>({ cpu: 0, gpu: 0, ram: 0 });
 
   useEffect(() => {
-    const updateStats = () => {
-      setStats({
-        cpu: Math.floor(Math.random() * 40 + 10),
-        gpu: Math.floor(Math.random() * 50 + 15),
-        ram: Math.floor(Math.random() * 60 + 20),
-      });
+    const updateStats = async () => {
+      try {
+        const result = await invoke<{
+          cpu_usage: number;
+          memory_usage: number;
+          memory_total: number;
+          memory_used: number;
+        }>('get_system_stats');
+
+        setStats({
+          cpu: Math.round(result.cpu_usage),
+          gpu: Math.floor(Math.random() * 50 + 15), // GPU ainda simulado
+          ram: Math.round(result.memory_usage),
+        });
+      } catch (error) {
+        console.error('Erro ao obter stats do sistema:', error);
+        // Fallback para valores simulados
+        setStats({
+          cpu: Math.floor(Math.random() * 40 + 10),
+          gpu: Math.floor(Math.random() * 50 + 15),
+          ram: Math.floor(Math.random() * 60 + 20),
+        });
+      }
     };
 
     updateStats();
