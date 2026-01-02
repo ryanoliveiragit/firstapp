@@ -26,13 +26,10 @@
           "name": "powershell-elevated",
           "cmd": "powershell",
           "args": [
+            "-NoProfile",
+            "-NonInteractive",
             "-Command",
-            "Start-Process",
-            "cmd.exe",
-            "-Verb",
-            "RunAs",
-            "-ArgumentList",
-            { "validator": "^/C .+$" }
+            { "validator": "^Start-Process .+$" }
           ]
         },
         {

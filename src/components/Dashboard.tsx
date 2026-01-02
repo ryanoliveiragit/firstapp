@@ -24,6 +24,12 @@ export default function Dashboard() {
   const [hasAdminConsent, setHasAdminConsent] = useState(false);
   const { user } = useAuth();
 
+  const buildStartProcessCommand = (filePath: string, args?: string) => {
+    const sanitizedPath = filePath.replace(/'/g, "''");
+    const sanitizedArgs = args ? args.replace(/'/g, "''") : undefined;
+    return `Start-Process -FilePath '${sanitizedPath}' -Verb RunAs${sanitizedArgs ? ` -ArgumentList '${sanitizedArgs}'` : ''} -WindowStyle Hidden`;
+  };
+
   const requestAdminPermission = async () => {
     if (hasAdminConsent) return true;
 
@@ -56,15 +62,12 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const batchPath = await resolveResource(resourceName);
-      const elevatedArg = `/C "call \\"${batchPath}\\""`;
+      const command = buildStartProcessCommand(batchPath, `/C "call \\"${batchPath}\\""`);
       const output = await Command.create('powershell-elevated', [
+        '-NoProfile',
+        '-NonInteractive',
         '-Command',
-        'Start-Process',
-        'cmd.exe',
-        '-Verb',
-        'RunAs',
-        '-ArgumentList',
-        elevatedArg,
+        command,
       ]).execute();
 
       if (output.code === 0) {
@@ -73,7 +76,7 @@ export default function Dashboard() {
         alert(`${onError}: ${output.stderr || 'Código de saída diferente de zero.'}`);
       }
     } catch (error) {
-      alert(`${onError}: ${error}`);
+      alert(`${onError}: ${error instanceof Error ? error.message : error}`);
     } finally {
       setLoading(false);
     }
@@ -86,15 +89,12 @@ export default function Dashboard() {
     setIsApplyingFPS(true);
     try {
       const regPath = await resolveResource('fps-boost.reg');
-      const elevatedArg = `/s \\"${regPath}\\"`;
+      const command = buildStartProcessCommand('regedit.exe', `/s \\"${regPath}\\"`);
       const output = await Command.create('powershell-elevated', [
+        '-NoProfile',
+        '-NonInteractive',
         '-Command',
-        'Start-Process',
-        'regedit.exe',
-        '-Verb',
-        'RunAs',
-        '-ArgumentList',
-        elevatedArg,
+        command,
       ]).execute();
 
       if (output.code === 0) {
