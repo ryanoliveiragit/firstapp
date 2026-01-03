@@ -40,7 +40,8 @@
       "fps_extremo.bat",
       "maintenance-cleanup.bat",
       "network-optimizer.bat",
-      "performance-optimizer.bat"
+      "performance-optimizer.bat",
+      "../dist/**/*"
     ]
   }
 }

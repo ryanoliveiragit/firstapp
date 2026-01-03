@@ -5,6 +5,8 @@ use sysinfo::{System, Components, Disks};
 use serde::Serialize;
 use std::sync::Arc;
 use tauri::Manager;
+use std::path::PathBuf;
+use std::fs;
 
 #[derive(Serialize)]
 struct DiskInfo {
@@ -91,21 +93,27 @@ fn get_system_stats() -> SystemStats {
     }
 }
 
-// Inicia servidor HTTP local para callbacks do Discord OAuth
+// Inicia servidor HTTP local para callbacks do Discord OAuth e serve a aplicação
 fn start_oauth_server() {
     std::thread::spawn(|| {
         let server = tiny_http::Server::http("127.0.0.1:1420").unwrap();
-        println!("OAuth callback server running on http://127.0.0.1:1420");
+        println!("OAuth server and app running on http://127.0.0.1:1420");
+
+        // Obtém o caminho base do executável para encontrar os recursos
+        let exe_dir = std::env::current_exe()
+            .ok()
+            .and_then(|p| p.parent().map(|p| p.to_path_buf()));
 
         for request in server.incoming_requests() {
             let url = request.url().to_string();
 
-            // Se for a rota /callback, serve uma página HTML que redireciona para o app
+            // Se for a rota /callback, redireciona para a raiz com o hash
             if url.starts_with("/callback") {
                 let html = r#"
                 <!DOCTYPE html>
                 <html>
                 <head>
+                    <meta charset="UTF-8">
                     <title>Autenticação Discord</title>
                     <style>
                         body {
@@ -144,26 +152,16 @@ fn start_oauth_server() {
                     <div class="container">
                         <div class="spinner"></div>
                         <h2>Autenticação bem-sucedida!</h2>
-                        <p>Redirecionando para o aplicativo...</p>
+                        <p>Redirecionando...</p>
                     </div>
                     <script>
-                        // Em produção, redireciona para tauri://localhost
-                        // Em desenvolvimento, redireciona para http://localhost:1420
-                        const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-                        const targetOrigin = isDev ? 'http://localhost:1420' : 'tauri://localhost';
-
                         // Extrai o hash da URL (contém o access_token)
                         const hash = window.location.hash;
 
-                        // Tenta redirecionar para o app principal
+                        // Redireciona para a raiz com o hash preservado
                         setTimeout(() => {
-                            window.location.href = targetOrigin + '/' + hash;
-                        }, 1000);
-
-                        // Fallback: fecha a janela após 3 segundos
-                        setTimeout(() => {
-                            window.close();
-                        }, 3000);
+                            window.location.href = '/' + hash;
+                        }, 500);
                     </script>
                 </body>
                 </html>
@@ -176,10 +174,72 @@ fn start_oauth_server() {
 
                 let _ = request.respond(response);
             } else {
-                // Para qualquer outra rota, retorna 404
-                let response = tiny_http::Response::from_string("Not Found")
-                    .with_status_code(404);
-                let _ = request.respond(response);
+                // Serve arquivos estáticos da pasta dist
+                let path = if url == "/" || url == "" {
+                    "index.html"
+                } else {
+                    &url[1..] // Remove a barra inicial
+                };
+
+                // Tenta encontrar o arquivo nos possíveis locais
+                let possible_paths = vec![
+                    PathBuf::from(format!("dist/{}", path)),
+                    exe_dir.clone().map(|d| d.join(format!("dist/{}", path))),
+                    exe_dir.clone().map(|d| d.parent().and_then(|p| p.parent()).map(|p| p.join(format!("dist/{}", path)))).flatten(),
+                ];
+
+                let mut file_found = false;
+                for possible_path in possible_paths.iter().flatten() {
+                    if let Ok(content) = fs::read(possible_path) {
+                        // Determina o tipo de conteúdo baseado na extensão
+                        let content_type = if path.ends_with(".html") {
+                            "text/html; charset=utf-8"
+                        } else if path.ends_with(".js") {
+                            "application/javascript; charset=utf-8"
+                        } else if path.ends_with(".css") {
+                            "text/css; charset=utf-8"
+                        } else if path.ends_with(".json") {
+                            "application/json; charset=utf-8"
+                        } else if path.ends_with(".png") {
+                            "image/png"
+                        } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
+                            "image/jpeg"
+                        } else if path.ends_with(".svg") {
+                            "image/svg+xml"
+                        } else if path.ends_with(".woff") || path.ends_with(".woff2") {
+                            "font/woff2"
+                        } else {
+                            "application/octet-stream"
+                        };
+
+                        let response = tiny_http::Response::from_data(content)
+                            .with_header(
+                                tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap()
+                            );
+
+                        let _ = request.respond(response);
+                        file_found = true;
+                        break;
+                    }
+                }
+
+                if !file_found {
+                    // Se não encontrou o arquivo, serve o index.html (para SPA routing)
+                    if let Ok(index_content) = fs::read("dist/index.html")
+                        .or_else(|_| exe_dir.clone().ok_or(std::io::Error::new(std::io::ErrorKind::NotFound, "")).and_then(|d| fs::read(d.join("dist/index.html"))))
+                    {
+                        let response = tiny_http::Response::from_data(index_content)
+                            .with_header(
+                                tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                            );
+                        let _ = request.respond(response);
+                    } else {
+                        // Se nem o index.html foi encontrado, retorna 404
+                        let response = tiny_http::Response::from_string("Not Found")
+                            .with_status_code(404);
+                        let _ = request.respond(response);
+                    }
+                }
             }
         }
     });

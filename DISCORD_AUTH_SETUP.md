@@ -70,7 +70,8 @@ O projeto está configurado para funcionar perfeitamente em produção! Aqui est
 1. **Servidor HTTP Local Embutido**:
    - Quando você faz o build do app (`npm run tauri build`), o Tauri inclui um servidor HTTP local que escuta em `http://localhost:1420`
    - Este servidor só roda em produção (não interfere com o dev server)
-   - Ele recebe os callbacks do Discord e redireciona para o app
+   - Ele serve toda a aplicação e também recebe os callbacks do Discord
+   - Funciona exatamente como em desenvolvimento, mas sem precisar do Vite
 
 2. **Mesma URL de Callback**:
    - Tanto em desenvolvimento quanto em produção, usamos `http://localhost:1420/callback`
