@@ -118,6 +118,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async () => {
+    if (!DISCORD_CLIENT_ID) {
+      throw new Error(
+        'Discord Client ID não configurado. Verifique a variável VITE_DISCORD_CLIENT_ID no arquivo .env.'
+      );
+    }
+
     await cleanupOAuth();
 
     return new Promise<void>(async (resolve, reject) => {
@@ -143,7 +149,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         oauthPortRef.current = port;
 
         const urlUnlisten = await onUrl((redirectUrl) => {
-          handleOAuthRedirect(redirectUrl).then(() => finalize()).catch(finalize);
+          handleOAuthRedirect(redirectUrl)
+            .then(() => finalize())
+            .catch((error) => {
+              console.error('Erro ao processar callback do Discord:', error);
+              finalize(error);
+            });
         });
         oauthUnlistenRef.current.push(urlUnlisten);
 
@@ -159,6 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         await openUrl(authUrl);
       } catch (error) {
+        console.error('Erro ao iniciar fluxo de OAuth do Discord:', error);
         finalize(error);
       }
     });
