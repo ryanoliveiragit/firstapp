@@ -182,14 +182,19 @@ fn start_oauth_server() {
                 };
 
                 // Tenta encontrar o arquivo nos possíveis locais
-                let possible_paths = vec![
+                let mut possible_paths: Vec<PathBuf> = vec![
                     PathBuf::from(format!("dist/{}", path)),
-                    exe_dir.clone().map(|d| d.join(format!("dist/{}", path))),
-                    exe_dir.clone().map(|d| d.parent().and_then(|p| p.parent()).map(|p| p.join(format!("dist/{}", path)))).flatten(),
                 ];
 
+                if let Some(ref dir) = exe_dir {
+                    possible_paths.push(dir.join(format!("dist/{}", path)));
+                    if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
+                        possible_paths.push(parent.join(format!("dist/{}", path)));
+                    }
+                }
+
                 let mut file_found = false;
-                for possible_path in possible_paths.iter().flatten() {
+                for possible_path in possible_paths.iter() {
                     if let Ok(content) = fs::read(possible_path) {
                         // Determina o tipo de conteúdo baseado na extensão
                         let content_type = if path.ends_with(".html") {
@@ -225,15 +230,31 @@ fn start_oauth_server() {
 
                 if !file_found {
                     // Se não encontrou o arquivo, serve o index.html (para SPA routing)
-                    if let Ok(index_content) = fs::read("dist/index.html")
-                        .or_else(|_| exe_dir.clone().ok_or(std::io::Error::new(std::io::ErrorKind::NotFound, "")).and_then(|d| fs::read(d.join("dist/index.html"))))
-                    {
-                        let response = tiny_http::Response::from_data(index_content)
-                            .with_header(
-                                tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                            );
-                        let _ = request.respond(response);
-                    } else {
+                    let mut index_paths: Vec<PathBuf> = vec![
+                        PathBuf::from("dist/index.html"),
+                    ];
+
+                    if let Some(ref dir) = exe_dir {
+                        index_paths.push(dir.join("dist/index.html"));
+                        if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
+                            index_paths.push(parent.join("dist/index.html"));
+                        }
+                    }
+
+                    let mut index_found = false;
+                    for index_path in index_paths.iter() {
+                        if let Ok(index_content) = fs::read(index_path) {
+                            let response = tiny_http::Response::from_data(index_content)
+                                .with_header(
+                                    tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                                );
+                            let _ = request.respond(response);
+                            index_found = true;
+                            break;
+                        }
+                    }
+
+                    if !index_found {
                         // Se nem o index.html foi encontrado, retorna 404
                         let response = tiny_http::Response::from_string("Not Found")
                             .with_status_code(404);
