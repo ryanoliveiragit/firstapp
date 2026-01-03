@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { start as startOAuthServer, cancel as cancelOAuthServer, onUrl, onInvalidUrl } from '@fabianlars/tauri-plugin-oauth';
+import { open } from '@tauri-apps/plugin-opener';
 
 interface DiscordUser {
   id: string;
@@ -11,7 +13,7 @@ interface DiscordUser {
 interface AuthContextType {
   user: DiscordUser | null;
   licenseKey: string | null;
-  login: () => void;
+  login: () => Promise<void>;
   logout: () => void;
   setLicenseKey: (key: string) => void;
   isLoading: boolean;
@@ -31,9 +33,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<DiscordUser | null>(null);
   const [licenseKey, setLicenseKeyState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const oauthPortRef = useRef<number | null>(null);
+  const oauthUnlistenRef = useRef<Array<() => void>>([]);
 
   const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
-  const REDIRECT_URI = import.meta.env.VITE_DISCORD_REDIRECT_URI;
+  const DISCORD_REDIRECT_PORT =
+    Number(import.meta.env.VITE_DISCORD_REDIRECT_PORT) || 1420;
+  const DISCORD_REDIRECT_PATH = '/callback';
+
+  const cleanupOAuth = async () => {
+    oauthUnlistenRef.current.forEach((unlisten) => {
+      try {
+        unlisten();
+      } catch (error) {
+        console.error('Erro ao remover listener OAuth:', error);
+      }
+    });
+    oauthUnlistenRef.current = [];
+
+    if (oauthPortRef.current !== null) {
+      try {
+        await cancelOAuthServer(oauthPortRef.current);
+      } catch (error) {
+        console.error('Erro ao encerrar servidor OAuth:', error);
+      } finally {
+        oauthPortRef.current = null;
+      }
+    }
+  };
+
+  const handleOAuthRedirect = async (redirectUrl: string) => {
+    const [, fragment] = redirectUrl.split('#');
+    if (!fragment) {
+      throw new Error('Resposta do OAuth não contém fragmento com token.');
+    }
+
+    const params = new URLSearchParams(fragment);
+    const accessToken = params.get('access_token');
+
+    if (!accessToken) {
+      throw new Error('Token de acesso não encontrado na resposta do OAuth.');
+    }
+
+    try {
+      const response = await fetch('https://discord.com/api/users/@me', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Não foi possível obter os dados do usuário Discord.');
+      }
+
+      const userData: DiscordUser = await response.json();
+      setUser(userData);
+      localStorage.setItem('discord_user', JSON.stringify(userData));
+      localStorage.setItem('discord_token', accessToken);
+    } catch (error) {
+      throw new Error(
+        error instanceof Error ? error.message : 'Erro desconhecido ao processar login.'
+      );
+    }
+  };
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
@@ -47,46 +109,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLicenseKeyState(savedKey);
     }
     setIsLoading(false);
-
-    // Handle OAuth callback
-    const handleCallback = async () => {
-      const fragment = window.location.hash.substring(1);
-      const params = new URLSearchParams(fragment);
-      const accessToken = params.get('access_token');
-
-      if (accessToken) {
-        try {
-          // Fetch user data from Discord API
-          const response = await fetch('https://discord.com/api/users/@me', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-
-          if (response.ok) {
-            const userData: DiscordUser = await response.json();
-            setUser(userData);
-            localStorage.setItem('discord_user', JSON.stringify(userData));
-            localStorage.setItem('discord_token', accessToken);
-
-            // Clean up URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      }
-    };
-
-    handleCallback();
   }, []);
 
-  const login = () => {
-    const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&response_type=token&scope=identify%20email`;
+  useEffect(() => {
+    return () => {
+      cleanupOAuth();
+    };
+  }, []);
 
-    window.location.href = authUrl;
+  const login = async () => {
+    await cleanupOAuth();
+
+    return new Promise<void>(async (resolve, reject) => {
+      let finished = false;
+
+      const finalize = async (error?: unknown) => {
+        if (finished) return;
+        finished = true;
+        await cleanupOAuth();
+        if (error) {
+          reject(error instanceof Error ? error : new Error('Erro desconhecido ao fazer login.'));
+        } else {
+          resolve();
+        }
+      };
+
+      try {
+        const port = await startOAuthServer({
+          ports: [DISCORD_REDIRECT_PORT],
+          response:
+            '<html><body style="font-family: sans-serif; text-align: center; padding: 2rem;">Login concluído. Você pode fechar esta janela.</body></html>',
+        });
+        oauthPortRef.current = port;
+
+        const urlUnlisten = await onUrl((redirectUrl) => {
+          handleOAuthRedirect(redirectUrl).then(() => finalize()).catch(finalize);
+        });
+        oauthUnlistenRef.current.push(urlUnlisten);
+
+        const invalidUrlUnlisten = await onInvalidUrl((error) => {
+          finalize(new Error(`URL de redirecionamento inválida: ${error}`));
+        });
+        oauthUnlistenRef.current.push(invalidUrlUnlisten);
+
+        const redirectUri = `http://localhost:${port}${DISCORD_REDIRECT_PATH}`;
+        const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&response_type=token&scope=identify%20email`;
+
+        await open(authUrl);
+      } catch (error) {
+        finalize(error);
+      }
+    });
   };
 
   const logout = () => {
@@ -95,6 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('discord_user');
     localStorage.removeItem('discord_token');
     localStorage.removeItem('license_key');
+    cleanupOAuth();
   };
 
   const setLicenseKey = (key: string) => {

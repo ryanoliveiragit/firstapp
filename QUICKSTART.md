@@ -27,7 +27,7 @@ cp .env.example .env
 6. Cole no arquivo `.env`:
    ```
    VITE_DISCORD_CLIENT_ID=seu_client_id_aqui
-   VITE_DISCORD_REDIRECT_URI=http://localhost:1420/callback
+   VITE_DISCORD_REDIRECT_PORT=1420
    ```
 
 ## 🏃 Executar

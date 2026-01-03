@@ -92,6 +92,8 @@ fn get_system_stats() -> SystemStats {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_oauth::init())
         .invoke_handler(tauri::generate_handler![get_system_stats])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

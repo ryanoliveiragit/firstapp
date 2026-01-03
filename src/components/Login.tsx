@@ -16,9 +16,13 @@ const Login = () => {
     });
     try {
       await login();
+      setDiscordLoading(false);
     } catch (error) {
       toast.error('Erro ao fazer login', {
-        description: 'Ocorreu um erro ao tentar fazer login com Discord'
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Ocorreu um erro ao tentar fazer login com Discord'
       });
       setDiscordLoading(false);
     }
