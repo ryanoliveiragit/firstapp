@@ -3,6 +3,11 @@
   "productName": "firstapp",
   "version": "0.1.0",
   "identifier": "com.firstapp.dev",
+  "plugins": {
+    "deep-link": {
+      "schemes": ["firstapp"]
+    }
+  },
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -27,10 +32,6 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "deeplink": {
-      "protocol": "firstapp",
-      "schemes": ["firstapp"]
-    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
