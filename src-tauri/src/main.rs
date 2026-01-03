@@ -94,18 +94,46 @@ fn get_system_stats() -> SystemStats {
 }
 
 // Inicia servidor HTTP local para callbacks do Discord OAuth e serve a aplicação
-fn start_oauth_server() {
-    std::thread::spawn(|| {
+fn start_oauth_server(app_handle: tauri::AppHandle) {
+    std::thread::spawn(move || {
         let server = tiny_http::Server::http("127.0.0.1:1420").unwrap();
         println!("OAuth server and app running on http://127.0.0.1:1420");
 
-        // Obtém o caminho base do executável para encontrar os recursos
-        let exe_dir = std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.to_path_buf()));
+        // Obtém o caminho dos recursos usando o Tauri
+        let get_resource_path = |relative_path: &str| -> Option<PathBuf> {
+            // Tenta via Tauri resource path (produção)
+            if let Ok(resource_path) = app_handle.path().resource_dir() {
+                let full_path = resource_path.join(relative_path);
+                println!("Trying Tauri resource path: {:?}", full_path);
+                if full_path.exists() {
+                    println!("✓ Found via Tauri resource: {:?}", full_path);
+                    return Some(full_path);
+                }
+            }
+
+            // Fallback para caminho relativo (desenvolvimento)
+            let local_path = PathBuf::from(relative_path);
+            println!("Trying local path: {:?}", local_path);
+            if local_path.exists() {
+                println!("✓ Found via local path: {:?}", local_path);
+                return Some(local_path);
+            }
+
+            // Fallback para caminho relativo à raiz do projeto
+            let project_path = PathBuf::from("..").join(relative_path);
+            println!("Trying project path: {:?}", project_path);
+            if project_path.exists() {
+                println!("✓ Found via project path: {:?}", project_path);
+                return Some(project_path);
+            }
+
+            println!("✗ File not found: {}", relative_path);
+            None
+        };
 
         for request in server.incoming_requests() {
             let url = request.url().to_string();
+            println!("\n📥 Request: {}", url);
 
             // Determina qual tipo de resposta enviar
             enum ResponseType {
@@ -125,22 +153,12 @@ fn start_oauth_server() {
                     &url[1..] // Remove a barra inicial
                 };
 
-                // Tenta encontrar o arquivo nos possíveis locais
-                let mut possible_paths: Vec<PathBuf> = vec![
-                    PathBuf::from(format!("dist/{}", path)),
-                ];
-
-                if let Some(ref dir) = exe_dir {
-                    possible_paths.push(dir.join(format!("dist/{}", path)));
-                    if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
-                        possible_paths.push(parent.join(format!("dist/{}", path)));
-                    }
-                }
-
-                // Tenta carregar o arquivo
+                // Tenta carregar o arquivo usando o resource path
+                let file_path = format!("dist/{}", path);
                 let mut file_loaded = None;
-                for possible_path in possible_paths.iter() {
-                    if let Ok(content) = fs::read(possible_path) {
+
+                if let Some(resource_file_path) = get_resource_path(&file_path) {
+                    if let Ok(content) = fs::read(&resource_file_path) {
                         // Determina o tipo de conteúdo baseado na extensão
                         let content_type = if path.ends_with(".html") {
                             "text/html; charset=utf-8"
@@ -163,7 +181,6 @@ fn start_oauth_server() {
                         };
 
                         file_loaded = Some((content, content_type));
-                        break;
                     }
                 }
 
@@ -171,24 +188,8 @@ fn start_oauth_server() {
                     ResponseType::File(content, content_type)
                 } else {
                     // Se não encontrou, tenta servir index.html (para SPA routing)
-                    let mut index_paths: Vec<PathBuf> = vec![
-                        PathBuf::from("dist/index.html"),
-                    ];
-
-                    if let Some(ref dir) = exe_dir {
-                        index_paths.push(dir.join("dist/index.html"));
-                        if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
-                            index_paths.push(parent.join("dist/index.html"));
-                        }
-                    }
-
-                    let mut index_loaded = None;
-                    for index_path in index_paths.iter() {
-                        if let Ok(index_content) = fs::read(index_path) {
-                            index_loaded = Some(index_content);
-                            break;
-                        }
-                    }
+                    let index_loaded = get_resource_path("dist/index.html")
+                        .and_then(|index_path| fs::read(index_path).ok());
 
                     if let Some(index_content) = index_loaded {
                         ResponseType::Index(index_content)
@@ -290,10 +291,10 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![get_system_stats])
-        .setup(|_app| {
+        .setup(|app| {
             // Inicia o servidor OAuth apenas em produção
             #[cfg(not(debug_assertions))]
-            start_oauth_server();
+            start_oauth_server(app.handle().clone());
 
             Ok(())
         })
