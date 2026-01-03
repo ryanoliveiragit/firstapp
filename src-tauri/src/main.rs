@@ -3,10 +3,7 @@
 
 use sysinfo::{System, Components, Disks};
 use serde::Serialize;
-use std::sync::Arc;
 use tauri::Manager;
-use std::path::PathBuf;
-use std::fs;
 
 #[derive(Serialize)]
 struct DiskInfo {
@@ -93,209 +90,34 @@ fn get_system_stats() -> SystemStats {
     }
 }
 
-// Inicia servidor HTTP local para callbacks do Discord OAuth e serve a aplicação
-fn start_oauth_server(app_handle: tauri::AppHandle) {
-    std::thread::spawn(move || {
-        let server = tiny_http::Server::http("127.0.0.1:1420").unwrap();
-        println!("OAuth server and app running on http://127.0.0.1:1420");
-
-        // Obtém o caminho dos recursos usando o Tauri
-        let get_resource_path = |relative_path: &str| -> Option<PathBuf> {
-            // Tenta via Tauri resource path (produção)
-            if let Ok(resource_path) = app_handle.path().resource_dir() {
-                let full_path = resource_path.join(relative_path);
-                println!("Trying Tauri resource path: {:?}", full_path);
-                if full_path.exists() {
-                    println!("✓ Found via Tauri resource: {:?}", full_path);
-                    return Some(full_path);
-                }
-            }
-
-            // Fallback para caminho relativo (desenvolvimento)
-            let local_path = PathBuf::from(relative_path);
-            println!("Trying local path: {:?}", local_path);
-            if local_path.exists() {
-                println!("✓ Found via local path: {:?}", local_path);
-                return Some(local_path);
-            }
-
-            // Fallback para caminho relativo à raiz do projeto
-            let project_path = PathBuf::from("..").join(relative_path);
-            println!("Trying project path: {:?}", project_path);
-            if project_path.exists() {
-                println!("✓ Found via project path: {:?}", project_path);
-                return Some(project_path);
-            }
-
-            println!("✗ File not found: {}", relative_path);
-            None
-        };
-
-        for request in server.incoming_requests() {
-            let url = request.url().to_string();
-            println!("\n📥 Request: {}", url);
-
-            // Determina qual tipo de resposta enviar
-            enum ResponseType {
-                Callback,
-                File(Vec<u8>, &'static str),
-                Index(Vec<u8>),
-                NotFound,
-            }
-
-            let response_type = if url.starts_with("/callback") {
-                ResponseType::Callback
-            } else {
-                // Para qualquer outra rota, retorna uma mensagem informativa
-                // A aplicação principal roda no Tauri, não aqui!
-                ResponseType::NotFound
-            };
-
-            // Cria e envia a resposta baseado no tipo
-            let response = match response_type {
-                ResponseType::Callback => {
-                    let html = r#"
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Autenticação Discord</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            height: 100vh;
-                            margin: 0;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            color: white;
-                        }
-                        .container {
-                            text-align: center;
-                            padding: 2rem;
-                            background: rgba(255, 255, 255, 0.1);
-                            border-radius: 1rem;
-                            backdrop-filter: blur(10px);
-                        }
-                        .spinner {
-                            border: 3px solid rgba(255, 255, 255, 0.3);
-                            border-radius: 50%;
-                            border-top: 3px solid white;
-                            width: 40px;
-                            height: 40px;
-                            animation: spin 1s linear infinite;
-                            margin: 0 auto 1rem;
-                        }
-                        @keyframes spin {
-                            0% { transform: rotate(0deg); }
-                            100% { transform: rotate(360deg); }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="spinner"></div>
-                        <h2>Autenticação bem-sucedida!</h2>
-                        <p>Redirecionando...</p>
-                    </div>
-                    <script>
-                        // Extrai o hash da URL (contém o access_token)
-                        const hash = window.location.hash;
-
-                        // Salva o token no localStorage para a aplicação Tauri acessar
-                        if (hash) {
-                            const params = new URLSearchParams(hash.substring(1));
-                            const accessToken = params.get('access_token');
-                            if (accessToken) {
-                                localStorage.setItem('discord_callback_token', accessToken);
-                            }
-                        }
-
-                        // Tenta abrir a aplicação Tauri
-                        setTimeout(() => {
-                            // Tenta fechar esta janela (callback)
-                            window.close();
-
-                            // Se não fechar, redireciona para localhost que vai abrir a app
-                            setTimeout(() => {
-                                window.location.href = 'http://localhost:1420/';
-                            }, 500);
-                        }, 1000);
-                    </script>
-                </body>
-                </html>
-                "#;
-                    tiny_http::Response::from_string(html)
-                        .with_header(
-                            tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                        )
-                },
-                ResponseType::File(content, content_type) => {
-                    tiny_http::Response::from_data(content)
-                        .with_header(
-                            tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap()
-                        )
-                },
-                ResponseType::Index(content) => {
-                    tiny_http::Response::from_data(content)
-                        .with_header(
-                            tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                        )
-                },
-                ResponseType::NotFound => {
-                    let html = r#"
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>OAuth Callback Server</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            height: 100vh;
-                            margin: 0;
-                            background: #1a1a1a;
-                            color: #fff;
-                        }
-                        .container {
-                            text-align: center;
-                            padding: 2rem;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>✅ OAuth Callback Server Running</h1>
-                        <p>This server is running to handle Discord OAuth callbacks.</p>
-                        <p>Please use the Tauri application window instead.</p>
-                    </div>
-                </body>
-                </html>
-                "#;
-                    tiny_http::Response::from_string(html)
-                        .with_header(
-                            tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                        )
-                },
-            };
-
-            let _ = request.respond(response);
-        }
-    });
-}
-
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_deep_link::init())
         .invoke_handler(tauri::generate_handler![get_system_stats])
         .setup(|app| {
-            // Inicia o servidor OAuth apenas em produção
-            #[cfg(not(debug_assertions))]
-            start_oauth_server(app.handle().clone());
+            // Registra handler para deep links
+            let handle = app.handle().clone();
+            tauri_plugin_deep_link::register("firstapp", move |request| {
+                println!("Deep link received: {}", request);
+
+                // Extrai o token da URL
+                // Formato: firstapp://callback#access_token=xxx
+                if let Some(token_start) = request.find("access_token=") {
+                    let token_part = &request[token_start + 13..];
+                    let token = if let Some(end) = token_part.find('&') {
+                        &token_part[..end]
+                    } else {
+                        token_part
+                    };
+
+                    println!("Token received: {}", token);
+
+                    // Emite evento para o frontend com o token
+                    handle.emit("discord-auth", token).unwrap();
+                }
+            })
+            .expect("Error registering deep link handler");
 
             Ok(())
         })

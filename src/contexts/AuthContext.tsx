@@ -48,59 +48,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setIsLoading(false);
 
-    // Handle OAuth callback
-    const handleCallback = async () => {
-      // Primeiro, verifica se há token no hash da URL
-      const fragment = window.location.hash.substring(1);
-      const params = new URLSearchParams(fragment);
-      let accessToken = params.get('access_token');
+    // Handle OAuth callback via Tauri deep link
+    const handleAuthToken = async (accessToken: string) => {
+      try {
+        // Fetch user data from Discord API
+        const response = await fetch('https://discord.com/api/users/@me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
 
-      // Se não houver no hash, verifica se o callback salvou no localStorage
-      if (!accessToken) {
-        const callbackToken = localStorage.getItem('discord_callback_token');
-        if (callbackToken) {
-          accessToken = callbackToken;
-          // Remove o token temporário
-          localStorage.removeItem('discord_callback_token');
+        if (response.ok) {
+          const userData: DiscordUser = await response.json();
+          setUser(userData);
+          localStorage.setItem('discord_user', JSON.stringify(userData));
+          localStorage.setItem('discord_token', accessToken);
         }
-      }
-
-      if (accessToken) {
-        try {
-          // Fetch user data from Discord API
-          const response = await fetch('https://discord.com/api/users/@me', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-
-          if (response.ok) {
-            const userData: DiscordUser = await response.json();
-            setUser(userData);
-            localStorage.setItem('discord_user', JSON.stringify(userData));
-            localStorage.setItem('discord_token', accessToken);
-
-            // Clean up URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
       }
     };
 
-    handleCallback();
-
-    // Verifica periodicamente se um token foi salvo (para caso o callback aconteça em outra aba)
-    const checkForToken = setInterval(() => {
-      const callbackToken = localStorage.getItem('discord_callback_token');
-      if (callbackToken && !user) {
-        handleCallback();
-      }
-    }, 1000);
-
-    return () => clearInterval(checkForToken);
-  }, [user]);
+    // Listen for deep link events from Tauri
+    if (window.__TAURI__) {
+      import('@tauri-apps/api/event').then(({ listen }) => {
+        listen<string>('discord-auth', (event) => {
+          console.log('Received auth token:', event.payload);
+          handleAuthToken(event.payload);
+        });
+      });
+    }
+  }, []);
 
   const login = async () => {
     const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
