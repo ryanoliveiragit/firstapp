@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { start as startOAuthServer, cancel as cancelOAuthServer, onUrl, onInvalidUrl } from '@fabianlars/tauri-plugin-oauth';
-import { open } from '@tauri-apps/plugin-opener';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 interface DiscordUser {
   id: string;
@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           redirectUri
         )}&response_type=token&scope=identify%20email`;
 
-        await open(authUrl);
+        await openUrl(authUrl);
       } catch (error) {
         finalize(error);
       }
