@@ -3,6 +3,8 @@
 
 use sysinfo::{System, Components, Disks};
 use serde::Serialize;
+use std::sync::Arc;
+use tauri::Manager;
 
 #[derive(Serialize)]
 struct DiskInfo {
@@ -89,10 +91,111 @@ fn get_system_stats() -> SystemStats {
     }
 }
 
+// Inicia servidor HTTP local para callbacks do Discord OAuth
+fn start_oauth_server() {
+    std::thread::spawn(|| {
+        let server = tiny_http::Server::http("127.0.0.1:1420").unwrap();
+        println!("OAuth callback server running on http://127.0.0.1:1420");
+
+        for request in server.incoming_requests() {
+            let url = request.url().to_string();
+
+            // Se for a rota /callback, serve uma página HTML que redireciona para o app
+            if url.starts_with("/callback") {
+                let html = r#"
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Autenticação Discord</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            margin: 0;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                        }
+                        .container {
+                            text-align: center;
+                            padding: 2rem;
+                            background: rgba(255, 255, 255, 0.1);
+                            border-radius: 1rem;
+                            backdrop-filter: blur(10px);
+                        }
+                        .spinner {
+                            border: 3px solid rgba(255, 255, 255, 0.3);
+                            border-radius: 50%;
+                            border-top: 3px solid white;
+                            width: 40px;
+                            height: 40px;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 1rem;
+                        }
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="spinner"></div>
+                        <h2>Autenticação bem-sucedida!</h2>
+                        <p>Redirecionando para o aplicativo...</p>
+                    </div>
+                    <script>
+                        // Em produção, redireciona para tauri://localhost
+                        // Em desenvolvimento, redireciona para http://localhost:1420
+                        const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+                        const targetOrigin = isDev ? 'http://localhost:1420' : 'tauri://localhost';
+
+                        // Extrai o hash da URL (contém o access_token)
+                        const hash = window.location.hash;
+
+                        // Tenta redirecionar para o app principal
+                        setTimeout(() => {
+                            window.location.href = targetOrigin + '/' + hash;
+                        }, 1000);
+
+                        // Fallback: fecha a janela após 3 segundos
+                        setTimeout(() => {
+                            window.close();
+                        }, 3000);
+                    </script>
+                </body>
+                </html>
+                "#;
+
+                let response = tiny_http::Response::from_string(html)
+                    .with_header(
+                        tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                    );
+
+                let _ = request.respond(response);
+            } else {
+                // Para qualquer outra rota, retorna 404
+                let response = tiny_http::Response::from_string("Not Found")
+                    .with_status_code(404);
+                let _ = request.respond(response);
+            }
+        }
+    });
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![get_system_stats])
+        .setup(|_app| {
+            // Inicia o servidor OAuth apenas em produção
+            #[cfg(not(debug_assertions))]
+            start_oauth_server();
+
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
