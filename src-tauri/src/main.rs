@@ -107,9 +107,101 @@ fn start_oauth_server() {
         for request in server.incoming_requests() {
             let url = request.url().to_string();
 
-            // Se for a rota /callback, redireciona para a raiz com o hash
-            if url.starts_with("/callback") {
-                let html = r#"
+            // Determina qual tipo de resposta enviar
+            enum ResponseType {
+                Callback,
+                File(Vec<u8>, &'static str),
+                Index(Vec<u8>),
+                NotFound,
+            }
+
+            let response_type = if url.starts_with("/callback") {
+                ResponseType::Callback
+            } else {
+                // Serve arquivos estáticos da pasta dist
+                let path = if url == "/" || url == "" {
+                    "index.html"
+                } else {
+                    &url[1..] // Remove a barra inicial
+                };
+
+                // Tenta encontrar o arquivo nos possíveis locais
+                let mut possible_paths: Vec<PathBuf> = vec![
+                    PathBuf::from(format!("dist/{}", path)),
+                ];
+
+                if let Some(ref dir) = exe_dir {
+                    possible_paths.push(dir.join(format!("dist/{}", path)));
+                    if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
+                        possible_paths.push(parent.join(format!("dist/{}", path)));
+                    }
+                }
+
+                // Tenta carregar o arquivo
+                let mut file_loaded = None;
+                for possible_path in possible_paths.iter() {
+                    if let Ok(content) = fs::read(possible_path) {
+                        // Determina o tipo de conteúdo baseado na extensão
+                        let content_type = if path.ends_with(".html") {
+                            "text/html; charset=utf-8"
+                        } else if path.ends_with(".js") {
+                            "application/javascript; charset=utf-8"
+                        } else if path.ends_with(".css") {
+                            "text/css; charset=utf-8"
+                        } else if path.ends_with(".json") {
+                            "application/json; charset=utf-8"
+                        } else if path.ends_with(".png") {
+                            "image/png"
+                        } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
+                            "image/jpeg"
+                        } else if path.ends_with(".svg") {
+                            "image/svg+xml"
+                        } else if path.ends_with(".woff") || path.ends_with(".woff2") {
+                            "font/woff2"
+                        } else {
+                            "application/octet-stream"
+                        };
+
+                        file_loaded = Some((content, content_type));
+                        break;
+                    }
+                }
+
+                if let Some((content, content_type)) = file_loaded {
+                    ResponseType::File(content, content_type)
+                } else {
+                    // Se não encontrou, tenta servir index.html (para SPA routing)
+                    let mut index_paths: Vec<PathBuf> = vec![
+                        PathBuf::from("dist/index.html"),
+                    ];
+
+                    if let Some(ref dir) = exe_dir {
+                        index_paths.push(dir.join("dist/index.html"));
+                        if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
+                            index_paths.push(parent.join("dist/index.html"));
+                        }
+                    }
+
+                    let mut index_loaded = None;
+                    for index_path in index_paths.iter() {
+                        if let Ok(index_content) = fs::read(index_path) {
+                            index_loaded = Some(index_content);
+                            break;
+                        }
+                    }
+
+                    if let Some(index_content) = index_loaded {
+                        ResponseType::Index(index_content)
+                    } else {
+                        ResponseType::NotFound
+                    }
+                }
+            };
+
+            // Cria e envia a resposta baseado no tipo
+            let response = match response_type {
+                ResponseType::Callback => {
+                    let html = r#"
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -166,106 +258,30 @@ fn start_oauth_server() {
                 </body>
                 </html>
                 "#;
-
-                let response = tiny_http::Response::from_string(html)
-                    .with_header(
-                        tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                    );
-
-                let _ = request.respond(response);
-                continue; // Vai para o próximo request
-            }
-
-            // Serve arquivos estáticos da pasta dist
-            let path = if url == "/" || url == "" {
-                "index.html"
-            } else {
-                &url[1..] // Remove a barra inicial
-            };
-
-            // Tenta encontrar o arquivo nos possíveis locais
-            let mut possible_paths: Vec<PathBuf> = vec![
-                PathBuf::from(format!("dist/{}", path)),
-            ];
-
-            if let Some(ref dir) = exe_dir {
-                possible_paths.push(dir.join(format!("dist/{}", path)));
-                if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
-                    possible_paths.push(parent.join(format!("dist/{}", path)));
-                }
-            }
-
-            // Tenta servir o arquivo solicitado
-            let mut served = false;
-            for possible_path in possible_paths.iter() {
-                if let Ok(content) = fs::read(possible_path) {
-                    // Determina o tipo de conteúdo baseado na extensão
-                    let content_type = if path.ends_with(".html") {
-                        "text/html; charset=utf-8"
-                    } else if path.ends_with(".js") {
-                        "application/javascript; charset=utf-8"
-                    } else if path.ends_with(".css") {
-                        "text/css; charset=utf-8"
-                    } else if path.ends_with(".json") {
-                        "application/json; charset=utf-8"
-                    } else if path.ends_with(".png") {
-                        "image/png"
-                    } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
-                        "image/jpeg"
-                    } else if path.ends_with(".svg") {
-                        "image/svg+xml"
-                    } else if path.ends_with(".woff") || path.ends_with(".woff2") {
-                        "font/woff2"
-                    } else {
-                        "application/octet-stream"
-                    };
-
-                    let response = tiny_http::Response::from_data(content)
-                        .with_header(
-                            tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap()
-                        );
-
-                    let _ = request.respond(response);
-                    served = true;
-                    break;
-                }
-            }
-
-            if served {
-                continue; // Vai para o próximo request
-            }
-
-            // Se não encontrou o arquivo, tenta servir index.html (para SPA routing)
-            let mut index_paths: Vec<PathBuf> = vec![
-                PathBuf::from("dist/index.html"),
-            ];
-
-            if let Some(ref dir) = exe_dir {
-                index_paths.push(dir.join("dist/index.html"));
-                if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
-                    index_paths.push(parent.join("dist/index.html"));
-                }
-            }
-
-            let mut index_served = false;
-            for index_path in index_paths.iter() {
-                if let Ok(index_content) = fs::read(index_path) {
-                    let response = tiny_http::Response::from_data(index_content)
+                    tiny_http::Response::from_string(html)
                         .with_header(
                             tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                        );
-                    let _ = request.respond(response);
-                    index_served = true;
-                    break;
-                }
-            }
+                        )
+                },
+                ResponseType::File(content, content_type) => {
+                    tiny_http::Response::from_data(content)
+                        .with_header(
+                            tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap()
+                        )
+                },
+                ResponseType::Index(content) => {
+                    tiny_http::Response::from_data(content)
+                        .with_header(
+                            tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                        )
+                },
+                ResponseType::NotFound => {
+                    tiny_http::Response::from_string("Not Found")
+                        .with_status_code(404)
+                },
+            };
 
-            if !index_served {
-                // Se nem o index.html foi encontrado, retorna 404
-                let response = tiny_http::Response::from_string("Not Found")
-                    .with_status_code(404);
-                let _ = request.respond(response);
-            }
+            let _ = request.respond(response);
         }
     });
 }
