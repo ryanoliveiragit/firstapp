@@ -138,17 +138,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
+        console.error('Erro ao concluir login com Discord:', error);
+
         if (error instanceof Error) {
           const message =
             error.message && error.message.trim().length > 0
               ? error.message
-              : 'Não foi possível concluir o login com o Discord. Verifique sua conexão e tente novamente.';
+              : 'Não foi possível concluir o login com o Discord. Verifique sua conexão, se o Discord está acessível e se as variáveis VITE_DISCORD_CLIENT_ID/VITE_DISCORD_REDIRECT_PORT estão configuradas.';
           reject(new Error(message));
           return;
         }
 
         reject(
-          new Error('Não foi possível concluir o login com o Discord. Verifique a configuração e tente novamente.')
+          new Error(
+            'Não foi possível concluir o login com o Discord. Verifique a configuração (Client ID, porta de redirecionamento) e tente novamente.'
+          )
         );
       };
 
