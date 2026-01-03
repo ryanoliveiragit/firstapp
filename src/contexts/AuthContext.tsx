@@ -50,9 +50,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Handle OAuth callback
     const handleCallback = async () => {
+      // Primeiro, verifica se há token no hash da URL
       const fragment = window.location.hash.substring(1);
       const params = new URLSearchParams(fragment);
-      const accessToken = params.get('access_token');
+      let accessToken = params.get('access_token');
+
+      // Se não houver no hash, verifica se o callback salvou no localStorage
+      if (!accessToken) {
+        const callbackToken = localStorage.getItem('discord_callback_token');
+        if (callbackToken) {
+          accessToken = callbackToken;
+          // Remove o token temporário
+          localStorage.removeItem('discord_callback_token');
+        }
+      }
 
       if (accessToken) {
         try {
@@ -79,7 +90,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     handleCallback();
-  }, []);
+
+    // Verifica periodicamente se um token foi salvo (para caso o callback aconteça em outra aba)
+    const checkForToken = setInterval(() => {
+      const callbackToken = localStorage.getItem('discord_callback_token');
+      if (callbackToken && !user) {
+        handleCallback();
+      }
+    }, 1000);
+
+    return () => clearInterval(checkForToken);
+  }, [user]);
 
   const login = () => {
     const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(

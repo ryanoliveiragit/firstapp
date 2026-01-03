@@ -146,57 +146,9 @@ fn start_oauth_server(app_handle: tauri::AppHandle) {
             let response_type = if url.starts_with("/callback") {
                 ResponseType::Callback
             } else {
-                // Serve arquivos estáticos da pasta dist
-                let path = if url == "/" || url == "" {
-                    "index.html"
-                } else {
-                    &url[1..] // Remove a barra inicial
-                };
-
-                // Tenta carregar o arquivo usando o resource path
-                let file_path = format!("dist/{}", path);
-                let mut file_loaded = None;
-
-                if let Some(resource_file_path) = get_resource_path(&file_path) {
-                    if let Ok(content) = fs::read(&resource_file_path) {
-                        // Determina o tipo de conteúdo baseado na extensão
-                        let content_type = if path.ends_with(".html") {
-                            "text/html; charset=utf-8"
-                        } else if path.ends_with(".js") {
-                            "application/javascript; charset=utf-8"
-                        } else if path.ends_with(".css") {
-                            "text/css; charset=utf-8"
-                        } else if path.ends_with(".json") {
-                            "application/json; charset=utf-8"
-                        } else if path.ends_with(".png") {
-                            "image/png"
-                        } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
-                            "image/jpeg"
-                        } else if path.ends_with(".svg") {
-                            "image/svg+xml"
-                        } else if path.ends_with(".woff") || path.ends_with(".woff2") {
-                            "font/woff2"
-                        } else {
-                            "application/octet-stream"
-                        };
-
-                        file_loaded = Some((content, content_type));
-                    }
-                }
-
-                if let Some((content, content_type)) = file_loaded {
-                    ResponseType::File(content, content_type)
-                } else {
-                    // Se não encontrou, tenta servir index.html (para SPA routing)
-                    let index_loaded = get_resource_path("dist/index.html")
-                        .and_then(|index_path| fs::read(index_path).ok());
-
-                    if let Some(index_content) = index_loaded {
-                        ResponseType::Index(index_content)
-                    } else {
-                        ResponseType::NotFound
-                    }
-                }
+                // Para qualquer outra rota, retorna uma mensagem informativa
+                // A aplicação principal roda no Tauri, não aqui!
+                ResponseType::NotFound
             };
 
             // Cria e envia a resposta baseado no tipo
@@ -251,10 +203,25 @@ fn start_oauth_server(app_handle: tauri::AppHandle) {
                         // Extrai o hash da URL (contém o access_token)
                         const hash = window.location.hash;
 
-                        // Redireciona para a raiz com o hash preservado
+                        // Salva o token no localStorage para a aplicação Tauri acessar
+                        if (hash) {
+                            const params = new URLSearchParams(hash.substring(1));
+                            const accessToken = params.get('access_token');
+                            if (accessToken) {
+                                localStorage.setItem('discord_callback_token', accessToken);
+                            }
+                        }
+
+                        // Tenta abrir a aplicação Tauri
                         setTimeout(() => {
-                            window.location.href = '/' + hash;
-                        }, 500);
+                            // Tenta fechar esta janela (callback)
+                            window.close();
+
+                            // Se não fechar, redireciona para localhost que vai abrir a app
+                            setTimeout(() => {
+                                window.location.href = 'http://localhost:1420/';
+                            }, 500);
+                        }, 1000);
                     </script>
                 </body>
                 </html>
@@ -277,8 +244,42 @@ fn start_oauth_server(app_handle: tauri::AppHandle) {
                         )
                 },
                 ResponseType::NotFound => {
-                    tiny_http::Response::from_string("Not Found")
-                        .with_status_code(404)
+                    let html = r#"
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>OAuth Callback Server</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            margin: 0;
+                            background: #1a1a1a;
+                            color: #fff;
+                        }
+                        .container {
+                            text-align: center;
+                            padding: 2rem;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>✅ OAuth Callback Server Running</h1>
+                        <p>This server is running to handle Discord OAuth callbacks.</p>
+                        <p>Please use the Tauri application window instead.</p>
+                    </div>
+                </body>
+                </html>
+                "#;
+                    tiny_http::Response::from_string(html)
+                        .with_header(
+                            tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                        )
                 },
             };
 
