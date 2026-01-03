@@ -133,11 +133,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (finished) return;
         finished = true;
         await cleanupOAuth();
-        if (error) {
-          reject(error instanceof Error ? error : new Error('Erro desconhecido ao fazer login.'));
-        } else {
+        if (!error) {
           resolve();
+          return;
         }
+
+        if (error instanceof Error) {
+          const message =
+            error.message && error.message.trim().length > 0
+              ? error.message
+              : 'Não foi possível concluir o login com o Discord. Verifique sua conexão e tente novamente.';
+          reject(new Error(message));
+          return;
+        }
+
+        reject(
+          new Error('Não foi possível concluir o login com o Discord. Verifique a configuração e tente novamente.')
+        );
       };
 
       try {
