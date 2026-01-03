@@ -173,94 +173,98 @@ fn start_oauth_server() {
                     );
 
                 let _ = request.respond(response);
+                continue; // Vai para o próximo request
+            }
+
+            // Serve arquivos estáticos da pasta dist
+            let path = if url == "/" || url == "" {
+                "index.html"
             } else {
-                // Serve arquivos estáticos da pasta dist
-                let path = if url == "/" || url == "" {
-                    "index.html"
-                } else {
-                    &url[1..] // Remove a barra inicial
-                };
+                &url[1..] // Remove a barra inicial
+            };
 
-                // Tenta encontrar o arquivo nos possíveis locais
-                let mut possible_paths: Vec<PathBuf> = vec![
-                    PathBuf::from(format!("dist/{}", path)),
-                ];
+            // Tenta encontrar o arquivo nos possíveis locais
+            let mut possible_paths: Vec<PathBuf> = vec![
+                PathBuf::from(format!("dist/{}", path)),
+            ];
 
-                if let Some(ref dir) = exe_dir {
-                    possible_paths.push(dir.join(format!("dist/{}", path)));
-                    if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
-                        possible_paths.push(parent.join(format!("dist/{}", path)));
-                    }
+            if let Some(ref dir) = exe_dir {
+                possible_paths.push(dir.join(format!("dist/{}", path)));
+                if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
+                    possible_paths.push(parent.join(format!("dist/{}", path)));
                 }
+            }
 
-                let mut file_found = false;
-                for possible_path in possible_paths.iter() {
-                    if let Ok(content) = fs::read(possible_path) {
-                        // Determina o tipo de conteúdo baseado na extensão
-                        let content_type = if path.ends_with(".html") {
-                            "text/html; charset=utf-8"
-                        } else if path.ends_with(".js") {
-                            "application/javascript; charset=utf-8"
-                        } else if path.ends_with(".css") {
-                            "text/css; charset=utf-8"
-                        } else if path.ends_with(".json") {
-                            "application/json; charset=utf-8"
-                        } else if path.ends_with(".png") {
-                            "image/png"
-                        } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
-                            "image/jpeg"
-                        } else if path.ends_with(".svg") {
-                            "image/svg+xml"
-                        } else if path.ends_with(".woff") || path.ends_with(".woff2") {
-                            "font/woff2"
-                        } else {
-                            "application/octet-stream"
-                        };
+            // Tenta servir o arquivo solicitado
+            let mut served = false;
+            for possible_path in possible_paths.iter() {
+                if let Ok(content) = fs::read(possible_path) {
+                    // Determina o tipo de conteúdo baseado na extensão
+                    let content_type = if path.ends_with(".html") {
+                        "text/html; charset=utf-8"
+                    } else if path.ends_with(".js") {
+                        "application/javascript; charset=utf-8"
+                    } else if path.ends_with(".css") {
+                        "text/css; charset=utf-8"
+                    } else if path.ends_with(".json") {
+                        "application/json; charset=utf-8"
+                    } else if path.ends_with(".png") {
+                        "image/png"
+                    } else if path.ends_with(".jpg") || path.ends_with(".jpeg") {
+                        "image/jpeg"
+                    } else if path.ends_with(".svg") {
+                        "image/svg+xml"
+                    } else if path.ends_with(".woff") || path.ends_with(".woff2") {
+                        "font/woff2"
+                    } else {
+                        "application/octet-stream"
+                    };
 
-                        let response = tiny_http::Response::from_data(content)
-                            .with_header(
-                                tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap()
-                            );
+                    let response = tiny_http::Response::from_data(content)
+                        .with_header(
+                            tiny_http::Header::from_bytes(&b"Content-Type"[..], content_type.as_bytes()).unwrap()
+                        );
 
-                        let _ = request.respond(response);
-                        file_found = true;
-                        break;
-                    }
+                    let _ = request.respond(response);
+                    served = true;
+                    break;
                 }
+            }
 
-                if !file_found {
-                    // Se não encontrou o arquivo, serve o index.html (para SPA routing)
-                    let mut index_paths: Vec<PathBuf> = vec![
-                        PathBuf::from("dist/index.html"),
-                    ];
+            if served {
+                continue; // Vai para o próximo request
+            }
 
-                    if let Some(ref dir) = exe_dir {
-                        index_paths.push(dir.join("dist/index.html"));
-                        if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
-                            index_paths.push(parent.join("dist/index.html"));
-                        }
-                    }
+            // Se não encontrou o arquivo, tenta servir index.html (para SPA routing)
+            let mut index_paths: Vec<PathBuf> = vec![
+                PathBuf::from("dist/index.html"),
+            ];
 
-                    let mut index_found = false;
-                    for index_path in index_paths.iter() {
-                        if let Ok(index_content) = fs::read(index_path) {
-                            let response = tiny_http::Response::from_data(index_content)
-                                .with_header(
-                                    tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
-                                );
-                            let _ = request.respond(response);
-                            index_found = true;
-                            break;
-                        }
-                    }
-
-                    if !index_found {
-                        // Se nem o index.html foi encontrado, retorna 404
-                        let response = tiny_http::Response::from_string("Not Found")
-                            .with_status_code(404);
-                        let _ = request.respond(response);
-                    }
+            if let Some(ref dir) = exe_dir {
+                index_paths.push(dir.join("dist/index.html"));
+                if let Some(parent) = dir.parent().and_then(|p| p.parent()) {
+                    index_paths.push(parent.join("dist/index.html"));
                 }
+            }
+
+            let mut index_served = false;
+            for index_path in index_paths.iter() {
+                if let Ok(index_content) = fs::read(index_path) {
+                    let response = tiny_http::Response::from_data(index_content)
+                        .with_header(
+                            tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                        );
+                    let _ = request.respond(response);
+                    index_served = true;
+                    break;
+                }
+            }
+
+            if !index_served {
+                // Se nem o index.html foi encontrado, retorna 404
+                let response = tiny_http::Response::from_string("Not Found")
+                    .with_status_code(404);
+                let _ = request.respond(response);
             }
         }
     });
