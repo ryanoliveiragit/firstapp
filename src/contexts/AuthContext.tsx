@@ -129,6 +129,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return new Promise<void>(async (resolve, reject) => {
       let finished = false;
 
+      const buildUserFriendlyError = (err: unknown) => {
+        const toMessage = (raw: string) => {
+          if (raw.toLowerCase().includes('address in use')) {
+            return 'A porta configurada já está em uso. Feche outros apps que usem a porta configurada (padrão: 1420) ou altere VITE_DISCORD_REDIRECT_PORT.';
+          }
+          if (raw.toLowerCase().includes('network') || raw.toLowerCase().includes('fetch')) {
+            return 'Não foi possível alcançar o Discord. Verifique sua conexão, VPN/proxy e tente novamente.';
+          }
+          if (raw.toLowerCase().includes('oauth') || raw.toLowerCase().includes('invalid-url')) {
+            return 'Recebemos um redirecionamento inválido do Discord. Confirme se a URL de redirect em https://discord.com/developers/applications corresponde a http://localhost:1420/callback (ou a porta configurada).';
+          }
+          if (raw.toLowerCase().includes('plugin')) {
+            return 'O plugin OAuth/Opener não está disponível. Certifique-se de estar executando o app pelo Tauri (npm run tauri dev) e não apenas o Vite (npm run dev).';
+          }
+          return raw;
+        };
+
+        if (err instanceof Error) {
+          const raw = err.message && err.message.trim().length > 0 ? err.message.trim() : '';
+          return raw.length > 0
+            ? toMessage(raw)
+            : 'Não foi possível concluir o login com o Discord. Verifique a conexão, o Client ID e a porta configurada (VITE_DISCORD_REDIRECT_PORT).';
+        }
+
+        return 'Não foi possível concluir o login com o Discord. Verifique a conexão, o Client ID e a porta configurada (VITE_DISCORD_REDIRECT_PORT).';
+      };
+
       const finalize = async (error?: unknown) => {
         if (finished) return;
         finished = true;
@@ -141,11 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Erro ao concluir login com Discord:', error);
 
         if (error instanceof Error) {
-          const message =
-            error.message && error.message.trim().length > 0
-              ? error.message
-              : 'Não foi possível concluir o login com o Discord. Verifique sua conexão, se o Discord está acessível e se as variáveis VITE_DISCORD_CLIENT_ID/VITE_DISCORD_REDIRECT_PORT estão configuradas.';
-          reject(new Error(message));
+          reject(new Error(buildUserFriendlyError(error)));
           return;
         }
 
