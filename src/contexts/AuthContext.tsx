@@ -102,12 +102,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(checkForToken);
   }, [user]);
 
-  const login = () => {
+  const login = async () => {
     const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
       REDIRECT_URI
     )}&response_type=token&scope=identify%20email`;
 
-    window.location.href = authUrl;
+    // Tenta abrir no navegador externo usando Tauri
+    if (window.__TAURI__) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(authUrl);
+      } catch (error) {
+        console.error('Error opening browser:', error);
+        // Fallback para window.open se Tauri falhar
+        window.open(authUrl, '_blank');
+      }
+    } else {
+      // Em desenvolvimento, usa window.location
+      window.location.href = authUrl;
+    }
   };
 
   const logout = () => {
