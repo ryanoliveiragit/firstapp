@@ -2,6 +2,8 @@
 
 Este projeto utiliza OAuth2 do Discord para autenticação. Siga os passos abaixo para configurar:
 
+> Agora utilizamos o [tauri-plugin-oauth](https://crates.io/crates/tauri-plugin-oauth) para receber o callback do Discord por meio de um servidor local temporário. Certifique-se de que a porta configurada esteja liberada.
+
 ## 1. Criar Aplicação no Discord
 
 1. Acesse [Discord Developer Portal](https://discord.com/developers/applications)
@@ -33,7 +35,7 @@ Este projeto utiliza OAuth2 do Discord para autenticação. Siga os passos abaix
 2. Edite o arquivo `.env` e substitua os valores:
    ```env
    VITE_DISCORD_CLIENT_ID=seu_client_id_aqui
-   VITE_DISCORD_REDIRECT_URI=http://localhost:1420/callback
+   VITE_DISCORD_REDIRECT_PORT=1420
    ```
 
 ## 5. Executar a Aplicação
@@ -44,13 +46,13 @@ npm run dev
 
 ## Como Funciona
 
-A autenticação usa o fluxo OAuth2 Implicit Grant:
+A autenticação usa o fluxo OAuth2 com um servidor local criado pelo plugin:
 
-1. O usuário clica em "Login com Discord"
-2. É redirecionado para o Discord para autorizar a aplicação
-3. Discord redireciona de volta com o access token no hash da URL
-4. O token é usado para buscar os dados do usuário
-5. Os dados são salvos no localStorage para persistência
+1. O usuário clica em "Login com Discord".
+2. O `tauri-plugin-oauth` inicia um servidor local na porta configurada (padrão: 1420).
+3. O Discord redireciona para `http://localhost:1420/callback` com os dados do OAuth.
+4. O plugin captura o URL de redirecionamento e o app extrai o token para buscar os dados do usuário.
+5. Os dados são salvos no `localStorage` para persistência.
 
 ## Permissões Solicitadas
 
@@ -63,5 +65,5 @@ A autenticação usa o fluxo OAuth2 Implicit Grant:
 
 Para produção, você precisará:
 - Configurar as variáveis de ambiente no servidor
-- Atualizar a REDIRECT_URI para o domínio de produção
+- Garantir que a porta configurada esteja liberada ou ajustar `VITE_DISCORD_REDIRECT_PORT`
 - Adicionar a nova URL de redirect no Discord Developer Portal
