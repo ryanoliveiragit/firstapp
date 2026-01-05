@@ -41,9 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verifica se há chave salva no localStorage
-    const savedKey = localStorage.getItem('license_key');
-    const savedUser = localStorage.getItem('auth_user');
+    // Verifica se há chave salva no sessionStorage (mais seguro)
+    const savedKey = sessionStorage.getItem('license_key');
+    const savedUser = sessionStorage.getItem('auth_user');
 
     if (savedKey && savedUser) {
       try {
@@ -52,8 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(userData);
       } catch (error) {
         console.error('Erro ao carregar dados salvos:', error);
-        localStorage.removeItem('license_key');
-        localStorage.removeItem('auth_user');
+        sessionStorage.removeItem('license_key');
+        sessionStorage.removeItem('auth_user');
       }
     }
     setIsLoading(false);
@@ -62,7 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (key: string) => {
     if (!key || key.trim() === '') {
       toast.error('Chave inválida', {
-        description: 'Por favor, insira uma chave de autenticação válida'
+        description: 'Por favor, insira uma chave de autenticação válida',
+        duration: 4000,
       });
       return;
     }
@@ -72,10 +73,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const backendUrl = getBackendUrl();
       const apiUrl = `${backendUrl}/api/auth/validate`;
       const cleanKey = key.trim();
-      
-      console.log('🔐 Validando chave de autenticação...');
-      console.log(`📡 URL: ${apiUrl}`);
-      console.log(`🔑 Key length: ${cleanKey.length} caracteres`);
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -85,25 +82,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ key: cleanKey }),
       });
 
-      console.log(`📥 Response status: ${response.status} ${response.statusText}`);
-
+      // Tratamento específico de erros HTTP
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Erro ao validar chave' }));
-        console.error('❌ Erro na resposta:', errorData);
-        
-        // Mostrar erro do backend ao usuário
-        toast.error('❌ Erro ao validar chave', {
-          description: errorData.message || `Erro ${response.status}: ${response.statusText}`,
+
+        // Tratamento de códigos HTTP específicos
+        let errorTitle = 'Erro na autenticação';
+        let errorDescription = errorData.message || 'Erro ao validar chave';
+
+        switch (response.status) {
+          case 401:
+            errorTitle = 'Não autorizado';
+            errorDescription = 'Chave de autenticação não autorizada. Verifique suas credenciais.';
+            break;
+          case 403:
+            errorTitle = 'Chave inválida';
+            errorDescription = 'A chave fornecida é inválida ou expirou. Tente novamente.';
+            break;
+          case 500:
+            errorTitle = 'Erro no servidor';
+            errorDescription = 'Erro interno do servidor. Tente novamente mais tarde.';
+            break;
+          case 503:
+            errorTitle = 'Serviço indisponível';
+            errorDescription = 'O serviço está temporariamente indisponível. Tente novamente em alguns instantes.';
+            break;
+        }
+
+        toast.error(errorTitle, {
+          description: errorDescription,
           duration: 5000,
         });
-        
-        throw new Error(errorData.message || `Erro ${response.status}`);
+
+        throw new Error(errorDescription);
       }
 
       const data = await response.json();
-      console.log('✅ Resposta recebida:', data);
 
-      // Mostrar resposta do backend ao usuário
       if (data.valid) {
         const userData: User = {
           id: data.userId || 'unknown',
@@ -113,35 +128,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUser(userData);
         setLicenseKeyState(key.trim());
-        localStorage.setItem('license_key', key.trim());
-        localStorage.setItem('auth_user', JSON.stringify(userData));
 
-        toast.success('✅ Autenticação realizada com sucesso!', {
-          description: data.message || 'Bem-vindo de volta!',
-          duration: 4000,
+        // Usar sessionStorage para maior segurança (dados apagados ao fechar o navegador)
+        // Comentar as linhas abaixo e usar localStorage se preferir persistência
+        sessionStorage.setItem('license_key', key.trim());
+        sessionStorage.setItem('auth_user', JSON.stringify(userData));
+
+        toast.success('Autenticação bem-sucedida', {
+          description: 'Bem-vindo de volta! Redirecionando...',
+          duration: 3000,
         });
       } else {
         const errorMessage = data.message || 'Chave de autenticação inválida';
-        toast.error('❌ Falha na autenticação', {
+        toast.error('Falha na autenticação', {
           description: errorMessage,
-          duration: 5000,
+          duration: 4000,
         });
         throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Erro na autenticação:', error);
-      
-      // Se já mostrou o toast acima, não mostra novamente
-      if (error instanceof Error && error.message.includes('Erro ao validar chave')) {
-        throw error;
+      // Erro de rede
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast.error('Erro de conexão', {
+          description: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
+          duration: 5000,
+        });
       }
-      
-      // Erro de rede ou outro erro não tratado
-      const errorMessage = error instanceof Error ? error.message : 'Não foi possível validar a chave de autenticação';
-      toast.error('❌ Erro na autenticação', {
-        description: errorMessage,
-        duration: 5000,
-      });
+
       throw error;
     } finally {
       setIsLoading(false);
@@ -151,17 +164,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setLicenseKeyState(null);
-    localStorage.removeItem('license_key');
-    localStorage.removeItem('auth_user');
+    sessionStorage.removeItem('license_key');
+    sessionStorage.removeItem('auth_user');
 
     toast.success('Logout realizado', {
-      description: 'Você foi desconectado com sucesso'
+      description: 'Você foi desconectado com sucesso',
+      duration: 3000,
     });
   };
 
   const setLicenseKey = (key: string) => {
     setLicenseKeyState(key);
-    localStorage.setItem('license_key', key);
+    sessionStorage.setItem('license_key', key);
   };
 
   return (

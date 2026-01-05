@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Key, XCircle } from "lucide-react";
+import { Loader2, Key, XCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -11,11 +11,31 @@ const Login = () => {
   const [key, setKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasValidatedRef = useRef(false);
 
+  // Validação de formato da chave
+  const isValidKeyFormat = (key: string): boolean => {
+    const cleanKey = key.replace(/-/g, '');
+    // Regex: aceita apenas letras maiúsculas e números, mínimo 12 caracteres
+    const keyRegex = /^[A-Z0-9]{12,}$/;
+    return keyRegex.test(cleanKey);
+  };
+
   const validateKey = async (keyToValidate: string) => {
-    if (!keyToValidate.trim() || keyToValidate.trim().length < 12) {
+    const cleanKey = keyToValidate.trim().replace(/-/g, '');
+
+    if (!cleanKey || cleanKey.length < 12) {
+      return;
+    }
+
+    if (!isValidKeyFormat(cleanKey)) {
+      setError('Formato de chave inválido');
+      toast.error('Formato inválido', {
+        description: 'A chave deve conter apenas letras maiúsculas e números',
+        duration: 4000,
+      });
       return;
     }
 
@@ -26,22 +46,29 @@ const Login = () => {
     setIsLoading(true);
     hasValidatedRef.current = true;
     setError('');
-    
-    // Toast de loading
-    const loadingToast = toast.loading('Validando chave de autenticação...', {
-      description: 'Aguarde enquanto verificamos sua chave',
+
+    // Toast de loading com mensagens contextuais
+    const loadingMessages = [
+      'Validando sua chave...',
+      'Autenticando...',
+      'Conectando ao sistema...',
+    ];
+    const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+
+    const loadingToast = toast.loading(randomMessage, {
+      description: 'Aguarde enquanto verificamos suas credenciais',
       duration: Infinity,
       id: 'login-loading',
     });
 
     try {
-      await login(keyToValidate.trim());
+      await login(cleanKey);
       toast.dismiss(loadingToast);
     } catch (error) {
       toast.dismiss(loadingToast);
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar fazer login';
       setError(errorMessage);
-      hasValidatedRef.current = false; // Permite tentar novamente em caso de erro
+      hasValidatedRef.current = false;
     } finally {
       setIsLoading(false);
     }
@@ -97,29 +124,38 @@ const Login = () => {
   }, [key, isLoading]);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden ">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+      {/* Scan line effect */}
+      <div className="scan-line" />
 
-   <img
-    src='/gradient-1.png'
-    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
-  />
+      {/* Grid background */}
+      <div className="ai-grid-bg" />
 
+      {/* Glow orbs */}
+      <div className="glow-orb-cyan" style={{ top: '10%', left: '15%' }} />
+      <div className="glow-orb-purple" style={{ bottom: '15%', right: '10%' }} />
+
+      {/* Particles */}
+      <div className="particle" style={{ top: '20%', left: '25%' }} />
+      <div className="particle" style={{ top: '60%', right: '30%' }} />
+      <div className="particle" style={{ top: '40%', left: '70%' }} />
+      <div className="particle" style={{ bottom: '30%', left: '40%' }} />
 
       <div className="relative z-10 w-full max-w-md px-4">
         <div className="space-y-8 animate-fade-in-up">
           <div className="text-center space-y-4 animate-scale-in">
 
             <div className="space-y-2">
-              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent animate-fade-in">
+              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-fade-in neon-text">
                 Synapse
               </h1>
               <p className="text-muted-foreground max-w-sm mx-auto animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                Plataforma inteligente para otimização de performance e tweaking avançado
+                Plataforma inteligente de otimização com IA
               </p>
             </div>
           </div>
 
-          <Card className=" backdrop-blur-xl shadow-2xl animate-scale-in hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500" style={{ animationDelay: '200ms' }}>
+          <Card className="glass-panel backdrop-blur-xl shadow-2xl animate-scale-in cyber-glow transition-all duration-500 border-primary/20" style={{ animationDelay: '200ms' }}>
             <CardHeader className="space-y-1 pb-4 justify-cente text-center">
               <CardTitle className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</CardTitle>
               <CardDescription>
@@ -130,26 +166,37 @@ const Login = () => {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <div className="relative">
-                    <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    {isLoading && (
-                      <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 animate-spin text-primary" />
-                    )}
+                    <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary" />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                      {isLoading && (
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                     <Input
-                      type="text"
+                      type={showPassword ? "text" : "password"}
                       value={key}
                       onChange={(e) => {
-                        setKey(e.target.value);
+                        const value = e.target.value.toUpperCase();
+                        setKey(value);
                         setError('');
-                        hasValidatedRef.current = false; // Reset para permitir nova validação
+                        hasValidatedRef.current = false;
                       }}
                       onPaste={handlePaste}
                       placeholder="XXXX-XXXX-XXXX-XXXX"
-                      className={`w-full pl-10 pr-10 h-12 font-mono text-center tracking-wider transition-all ${
-                        error 
-                          ? 'border-destructive focus-visible:ring-destructive' 
+                      className={`w-full pl-10 pr-20 h-12 font-mono text-center tracking-wider transition-all bg-background/50 ${
+                        error
+                          ? 'border-destructive focus-visible:ring-destructive'
                           : isLoading
-                          ? 'border-primary'
-                          : ''
+                          ? 'border-primary shadow-[0_0_15px_rgba(0,217,255,0.3)]'
+                          : 'border-primary/30 focus-visible:border-primary focus-visible:shadow-[0_0_15px_rgba(0,217,255,0.2)]'
                       }`}
                       disabled={isLoading}
                       autoFocus
@@ -167,7 +214,7 @@ const Login = () => {
                 <Button
                   type="submit"
                   disabled={isLoading || !key.trim()}
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg button-shine button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(0,217,255,0.3)]"
                   size="lg"
                 >
                   {isLoading ? (
