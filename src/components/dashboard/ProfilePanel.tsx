@@ -1,41 +1,47 @@
 import { Card, CardContent } from '@/components/ui/card';
-
-interface User {
-  id: string;
-  username: string;
-  avatar?: string;
-  discriminator?: string;
-  email?: string;
-}
+import { User } from '@/contexts/AuthContext';
+import { Key, CheckCircle2 } from 'lucide-react';
 
 interface ProfilePanelProps {
   user: User | null;
 }
 
 export function ProfilePanel({ user }: ProfilePanelProps) {
-  const avatarUrl = user?.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
-    : `https://cdn.discordapp.com/embed/avatars/${user?.discriminator ? parseInt(user.discriminator) % 5 : 0}.png`;
+  if (!user) {
+    return (
+      <div className="max-w-2xl">
+        <Card className="glass-panel glass-card">
+          <CardContent className="p-6">
+            <p className="text-muted-foreground">Nenhum usuário logado</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Máscara a chave para exibição (mostra apenas primeiros e últimos caracteres)
+  const maskKey = (key: string) => {
+    if (key.length <= 8) return key;
+    return `${key.substring(0, 4)}${'*'.repeat(key.length - 8)}${key.substring(key.length - 4)}`;
+  };
 
   return (
     <div className="max-w-2xl">
       <Card className="glass-panel glass-card">
         <CardContent className="p-6">
           <div className="flex items-center gap-6 pb-6 border-b border-border">
-            <img
-              src={avatarUrl}
-              alt="User avatar"
-              className="w-20 h-20 rounded-full border-4 border-primary/30 shadow-lg shadow-primary/20"
-            />
+            <div className="w-20 h-20 rounded-full border-4 border-primary/30 shadow-lg shadow-primary/20 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+              <Key className="w-10 h-10 text-primary" />
+            </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold text-glow mb-1 truncate">
-                {user?.username}
+                Usuário Autenticado
               </h2>
-              {user?.email && (
-                <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-              )}
+              <p className="text-sm text-muted-foreground truncate mt-1">
+                Chave: {maskKey(user.licenseKey)}
+              </p>
               <p className="text-xs text-muted-foreground/70 mt-1.5">
-                ID: {user?.id}
+                ID: {user.id}
               </p>
             </div>
           </div>
@@ -43,11 +49,14 @@ export function ProfilePanel({ user }: ProfilePanelProps) {
           <div className="grid grid-cols-2 gap-3 mt-6">
             <div className="p-4 rounded-lg border border-border/50 glass-panel glass-card">
               <p className="text-xs text-muted-foreground mb-1.5">Tipo de Conta</p>
-              <p className="text-sm font-semibold">Administrator</p>
+              <p className="text-sm font-semibold">Licença</p>
             </div>
             <div className="p-4 rounded-lg border border-border/50 glass-panel glass-card">
               <p className="text-xs text-muted-foreground mb-1.5">Status</p>
-              <p className="text-sm font-semibold text-green-500">Ativo</p>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <p className="text-sm font-semibold text-green-500">Ativo</p>
+              </div>
             </div>
           </div>
         </CardContent>

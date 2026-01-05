@@ -1,28 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Key, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
   const { login } = useAuth();
-  const [githubLoading, setGithubLoading] = useState(false);
+  const [key, setKey] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasValidatedRef = useRef(false);
 
-  const handleGithubLogin = async () => {
-    setGithubLoading(true);
-    toast.info('Redirecionando para GitHub...', {
-      description: 'Você será redirecionado para fazer login'
+  const validateKey = async (keyToValidate: string) => {
+    if (!keyToValidate.trim() || keyToValidate.trim().length < 12) {
+      return;
+    }
+
+    if (isLoading || hasValidatedRef.current) {
+      return;
+    }
+
+    setIsLoading(true);
+    hasValidatedRef.current = true;
+    setError('');
+    
+    // Toast de loading
+    const loadingToast = toast.loading('Validando chave de autenticação...', {
+      description: 'Aguarde enquanto verificamos sua chave',
+      duration: Infinity,
+      id: 'login-loading',
     });
+
     try {
-      await login();
+      await login(keyToValidate.trim());
+      toast.dismiss(loadingToast);
     } catch (error) {
-      toast.error('Erro ao fazer login', {
-        description: 'Ocorreu um erro ao tentar fazer login com GitHub'
-      });
-      setGithubLoading(false);
+      toast.dismiss(loadingToast);
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar fazer login';
+      setError(errorMessage);
+      hasValidatedRef.current = false; // Permite tentar novamente em caso de erro
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (key.trim() && !isLoading) {
+      await validateKey(key.trim());
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    const cleanKey = pastedText.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    
+    if (cleanKey.length >= 12) {
+      // Formatar a chave colada
+      const formatted = cleanKey.match(/.{1,4}/g)?.join('-') || cleanKey;
+      setKey(formatted);
+      setError('');
+      
+      // Validar automaticamente após um pequeno delay
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+      validationTimeoutRef.current = setTimeout(() => {
+        validateKey(cleanKey);
+      }, 300);
+    }
+  };
+
+  // Validação automática quando a chave completa é digitada
+  useEffect(() => {
+    const cleanKey = key.replace(/-/g, '');
+    
+    if (cleanKey.length >= 12 && !isLoading && !hasValidatedRef.current) {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+      
+      validationTimeoutRef.current = setTimeout(() => {
+        validateKey(cleanKey);
+      }, 500); // Delay para evitar validação a cada tecla
+    }
+
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, isLoading]);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden ">
@@ -51,30 +123,66 @@ const Login = () => {
             <CardHeader className="space-y-1 pb-4 justify-cente text-center">
               <CardTitle className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</CardTitle>
               <CardDescription>
-                Faça login com sua conta GitHub para continuar
+                Insira sua chave de autenticação para continuar
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button
-                onClick={handleGithubLogin}
-                disabled={githubLoading}
-                className="w-full bg-[#24292e] hover:bg-[#1a1e22] text-white shadow-lg shadow-[#24292e]/20 button-hover"
-                size="lg"
-              >
-                {githubLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Conectando...</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                    </svg>
-                    <span>Continuar com GitHub</span>
-                  </span>
-                )}
-              </Button>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    {isLoading && (
+                      <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 animate-spin text-primary" />
+                    )}
+                    <Input
+                      type="text"
+                      value={key}
+                      onChange={(e) => {
+                        setKey(e.target.value);
+                        setError('');
+                        hasValidatedRef.current = false; // Reset para permitir nova validação
+                      }}
+                      onPaste={handlePaste}
+                      placeholder="XXXX-XXXX-XXXX-XXXX"
+                      className={`w-full pl-10 pr-10 h-12 font-mono text-center tracking-wider transition-all ${
+                        error 
+                          ? 'border-destructive focus-visible:ring-destructive' 
+                          : isLoading
+                          ? 'border-primary'
+                          : ''
+                      }`}
+                      disabled={isLoading}
+                      autoFocus
+                    />
+                  </div>
+                  
+                  {error && (
+                    <div className="flex items-center gap-2 text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg animate-in slide-in-from-top-1">
+                      <XCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading || !key.trim()}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Validando...</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <Key className="w-4 h-4" />
+                      <span>Entrar</span>
+                    </span>
+                  )}
+                </Button>
+              </form>
 
 
 

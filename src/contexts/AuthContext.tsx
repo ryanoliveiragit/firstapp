@@ -1,20 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
 import { toast } from 'sonner';
 
-interface GitHubUser {
-  id: number;
-  login: string;
-  name: string;
-  avatar_url: string;
-  email?: string;
+export interface User {
+  id: string;
+  licenseKey: string;
+  isValid: boolean;
 }
 
 interface AuthContextType {
-  user: GitHubUser | null;
+  user: User | null;
   licenseKey: string | null;
-  login: () => Promise<void>;
+  login: (key: string) => Promise<void>;
   logout: () => void;
   setLicenseKey: (key: string) => void;
   isLoading: boolean;
@@ -30,136 +26,133 @@ export const useAuth = () => {
   return context;
 };
 
+// URL do backend (pode ser configurada via variável de ambiente)
+const getBackendUrl = () => {
+  const envBackend = import.meta.env.VITE_BACKEND_URL;
+  if (envBackend) {
+    return envBackend;
+  }
+  return 'http://127.0.0.1:3000';
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<GitHubUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [licenseKey, setLicenseKeyState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
-  const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
-
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem('github_user');
+    // Verifica se há chave salva no localStorage
     const savedKey = localStorage.getItem('license_key');
+    const savedUser = localStorage.getItem('auth_user');
 
-    if (savedUser) {
+    if (savedKey && savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const userData = JSON.parse(savedUser);
+        setLicenseKeyState(savedKey);
+        setUser(userData);
       } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('github_user');
+        console.error('Erro ao carregar dados salvos:', error);
+        localStorage.removeItem('license_key');
+        localStorage.removeItem('auth_user');
       }
     }
-    if (savedKey) {
-      setLicenseKeyState(savedKey);
-    }
     setIsLoading(false);
+  }, []);
 
-    // Listen for OAuth callback from Tauri
-    const setupListener = async () => {
-      const unlisten = await listen('oauth-callback', async (event: any) => {
-        const { code, error } = event.payload;
-
-        if (error) {
-          toast.error('Erro na autenticação', {
-            description: `GitHub retornou um erro: ${error}`
-          });
-          return;
-        }
-
-        if (code) {
-          try {
-            // Exchange code for access token
-            const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-              },
-              body: JSON.stringify({
-                client_id: GITHUB_CLIENT_ID,
-                client_secret: GITHUB_CLIENT_SECRET,
-                code: code,
-              }),
-            });
-
-            const tokenData = await tokenResponse.json();
-
-            if (tokenData.access_token) {
-              // Fetch user data from GitHub API
-              const userResponse = await fetch('https://api.github.com/user', {
-                headers: {
-                  Authorization: `Bearer ${tokenData.access_token}`,
-                },
-              });
-
-              if (userResponse.ok) {
-                const userData: GitHubUser = await userResponse.json();
-                setUser(userData);
-                localStorage.setItem('github_user', JSON.stringify(userData));
-                localStorage.setItem('github_token', tokenData.access_token);
-
-                toast.success('Login realizado com sucesso!', {
-                  description: `Bem-vindo, ${userData.name || userData.login}!`
-                });
-              } else {
-                toast.error('Erro ao buscar dados do usuário', {
-                  description: 'Não foi possível obter suas informações do GitHub'
-                });
-              }
-            } else {
-              toast.error('Erro na autenticação', {
-                description: tokenData.error_description || 'Não foi possível obter o token de acesso'
-              });
-            }
-          } catch (error) {
-            console.error('Error during OAuth flow:', error);
-            toast.error('Erro na autenticação', {
-              description: 'Ocorreu um erro ao processar o login'
-            });
-          }
-        }
+  const login = async (key: string) => {
+    if (!key || key.trim() === '') {
+      toast.error('Chave inválida', {
+        description: 'Por favor, insira uma chave de autenticação válida'
       });
+      return;
+    }
 
-      return unlisten;
-    };
-
-    let unlistenPromise = setupListener();
-
-    return () => {
-      unlistenPromise.then(unlisten => unlisten());
-    };
-  }, [GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET]);
-
-  const login = async () => {
     try {
-      // Start the OAuth listener
-      await invoke('start_oauth_listener');
+      setIsLoading(true);
+      const backendUrl = getBackendUrl();
+      const apiUrl = `${backendUrl}/api/auth/validate`;
+      const cleanKey = key.trim();
+      
+      console.log('🔐 Validando chave de autenticação...');
+      console.log(`📡 URL: ${apiUrl}`);
+      console.log(`🔑 Key length: ${cleanKey.length} caracteres`);
 
-      // Open GitHub OAuth in browser
-      await invoke('open_github_oauth', {
-        clientId: GITHUB_CLIENT_ID
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: cleanKey }),
       });
 
-      toast.info('Redirecionando para GitHub...', {
-        description: 'Complete o login no navegador'
-      });
+      console.log(`📥 Response status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erro ao validar chave' }));
+        console.error('❌ Erro na resposta:', errorData);
+        
+        // Mostrar erro do backend ao usuário
+        toast.error('❌ Erro ao validar chave', {
+          description: errorData.message || `Erro ${response.status}: ${response.statusText}`,
+          duration: 5000,
+        });
+        
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Resposta recebida:', data);
+
+      // Mostrar resposta do backend ao usuário
+      if (data.valid) {
+        const userData: User = {
+          id: data.userId || 'unknown',
+          licenseKey: key.trim(),
+          isValid: true,
+        };
+
+        setUser(userData);
+        setLicenseKeyState(key.trim());
+        localStorage.setItem('license_key', key.trim());
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+
+        toast.success('✅ Autenticação realizada com sucesso!', {
+          description: data.message || 'Bem-vindo de volta!',
+          duration: 4000,
+        });
+      } else {
+        const errorMessage = data.message || 'Chave de autenticação inválida';
+        toast.error('❌ Falha na autenticação', {
+          description: errorMessage,
+          duration: 5000,
+        });
+        throw new Error(errorMessage);
+      }
     } catch (error) {
-      console.error('Error starting OAuth flow:', error);
-      toast.error('Erro ao iniciar login', {
-        description: 'Não foi possível iniciar o processo de autenticação'
+      console.error('Erro na autenticação:', error);
+      
+      // Se já mostrou o toast acima, não mostra novamente
+      if (error instanceof Error && error.message.includes('Erro ao validar chave')) {
+        throw error;
+      }
+      
+      // Erro de rede ou outro erro não tratado
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível validar a chave de autenticação';
+      toast.error('❌ Erro na autenticação', {
+        description: errorMessage,
+        duration: 5000,
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
     setUser(null);
     setLicenseKeyState(null);
-    localStorage.removeItem('github_user');
-    localStorage.removeItem('github_token');
     localStorage.removeItem('license_key');
+    localStorage.removeItem('auth_user');
 
     toast.success('Logout realizado', {
       description: 'Você foi desconectado com sucesso'

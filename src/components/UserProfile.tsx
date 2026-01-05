@@ -1,14 +1,17 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Card } from './ui/card';
+import { Key, CheckCircle2 } from 'lucide-react';
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
 
   if (!user) return null;
 
-  const avatarUrl = user.avatar
-    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`
-    : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
+  // Máscara a chave para exibição
+  const maskKey = (key: string) => {
+    if (key.length <= 8) return key;
+    return `${key.substring(0, 4)}${'*'.repeat(key.length - 8)}${key.substring(key.length - 4)}`;
+  };
 
   return (
     <Card className="flex flex-col items-center justify-center min-h-screen">
@@ -41,32 +44,32 @@ const UserProfile = () => {
 
         <div className="text-center">
           <div className="mb-6 flex justify-center">
-            <img
-              src={avatarUrl}
-              alt={`${user.username}'s avatar`}
-              className="w-32 h-32 rounded-full border-4 border-indigo-500 shadow-lg"
-            />
+            <div className="w-32 h-32 rounded-full border-4 border-indigo-500 shadow-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+              <Key className="w-16 h-16 text-indigo-500" />
+            </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Olá, {user.username}!
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+            Usuário Autenticado
           </h1>
 
-          {user.discriminator !== '0' && (
-            <p className="text-gray-600 mb-1">
-              #{user.discriminator}
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Chave de Licença</p>
+            <p className="text-gray-800 dark:text-gray-200 font-mono text-xs break-all">
+              {maskKey(user.licenseKey)}
             </p>
-          )}
+          </div>
 
-          {user.email && (
-            <p className="text-gray-500 text-sm mb-6">{user.email}</p>
-          )}
-
-          <div className="bg-gray-100 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-600 mb-1">User ID</p>
-            <p className="text-gray-800 font-mono text-xs break-all">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">User ID</p>
+            <p className="text-gray-800 dark:text-gray-200 font-mono text-xs break-all">
               {user.id}
             </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 mb-6 text-green-600 dark:text-green-400">
+            <CheckCircle2 className="w-5 h-5" />
+            <span className="text-sm font-medium">Licença Válida</span>
           </div>
 
           <button
