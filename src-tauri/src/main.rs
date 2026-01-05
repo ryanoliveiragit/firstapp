@@ -2,7 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use sysinfo::{System, Components, Disks};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
+use std::sync::{Arc, Mutex};
+use tauri::Manager;
 
 #[derive(Serialize)]
 struct DiskInfo {
@@ -89,10 +91,116 @@ fn get_system_stats() -> SystemStats {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct OAuthCallbackData {
+    code: Option<String>,
+    error: Option<String>,
+}
+
+#[tauri::command]
+async fn start_oauth_listener(app: tauri::AppHandle) -> Result<String, String> {
+    let server = tiny_http::Server::http("127.0.0.1:3000")
+        .map_err(|e| format!("Failed to start server: {}", e))?;
+
+    println!("OAuth listener started on http://127.0.0.1:3000");
+
+    // Spawn a thread to handle the callback
+    std::thread::spawn(move || {
+        if let Ok(request) = server.recv() {
+            let url_string = format!("http://127.0.0.1:3000{}", request.url());
+
+            if let Ok(parsed_url) = url::Url::parse(&url_string) {
+                let mut callback_data = OAuthCallbackData {
+                    code: None,
+                    error: None,
+                };
+
+                // Extract query parameters
+                for (key, value) in parsed_url.query_pairs() {
+                    match key.as_ref() {
+                        "code" => callback_data.code = Some(value.to_string()),
+                        "error" => callback_data.error = Some(value.to_string()),
+                        _ => {}
+                    }
+                }
+
+                // Send success response to browser
+                let response_html = r#"
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Autenticação Concluída</title>
+                        <style>
+                            body {
+                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                                margin: 0;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            }
+                            .container {
+                                text-align: center;
+                                background: white;
+                                padding: 3rem;
+                                border-radius: 1rem;
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                            }
+                            h1 { color: #667eea; margin-bottom: 1rem; }
+                            p { color: #666; }
+                            .success { color: #10b981; font-size: 3rem; margin-bottom: 1rem; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="success">✓</div>
+                            <h1>Autenticação Concluída!</h1>
+                            <p>Você pode fechar esta janela e retornar ao aplicativo.</p>
+                        </div>
+                    </body>
+                    </html>
+                "#;
+
+                let response = tiny_http::Response::from_string(response_html)
+                    .with_header(
+                        tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap()
+                    );
+                let _ = request.respond(response);
+
+                // Emit event to frontend with the callback data
+                let _ = app.emit("oauth-callback", callback_data);
+            }
+        }
+    });
+
+    Ok("OAuth listener started".to_string())
+}
+
+#[tauri::command]
+fn open_github_oauth(client_id: String) -> Result<(), String> {
+    let auth_url = format!(
+        "https://github.com/login/oauth/authorize?client_id={}&redirect_uri=http://127.0.0.1:3000/callback&scope=user:email",
+        client_id
+    );
+
+    // Open the URL in the default browser
+    if let Err(e) = open::that(&auth_url) {
+        return Err(format!("Failed to open browser: {}", e));
+    }
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![get_system_stats])
+        .invoke_handler(tauri::generate_handler![
+            get_system_stats,
+            start_oauth_listener,
+            open_github_oauth
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
