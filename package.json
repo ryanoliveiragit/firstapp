@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:start": "cd backend && npm start"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

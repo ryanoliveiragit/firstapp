@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
-interface DiscordUser {
+export interface User {
   id: string;
-  username: string;
-  discriminator: string;
-  avatar: string;
-  email?: string;
+  licenseKey: string;
+  isValid: boolean;
 }
 
 interface AuthContextType {
-  user: DiscordUser | null;
+  user: User | null;
   licenseKey: string | null;
-  login: () => void;
+  login: (key: string) => Promise<void>;
   logout: () => void;
   setLicenseKey: (key: string) => void;
   isLoading: boolean;
@@ -27,74 +26,137 @@ export const useAuth = () => {
   return context;
 };
 
+// URL do backend (pode ser configurada via variável de ambiente)
+const getBackendUrl = () => {
+  const envBackend = import.meta.env.VITE_BACKEND_URL;
+  if (envBackend) {
+    return envBackend;
+  }
+  return 'http://127.0.0.1:3000';
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<DiscordUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [licenseKey, setLicenseKeyState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
-  const REDIRECT_URI = import.meta.env.VITE_DISCORD_REDIRECT_URI;
-
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem('discord_user');
+    // Verifica se há chave salva no localStorage
     const savedKey = localStorage.getItem('license_key');
+    const savedUser = localStorage.getItem('auth_user');
 
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    if (savedKey) {
-      setLicenseKeyState(savedKey);
+    if (savedKey && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setLicenseKeyState(savedKey);
+        setUser(userData);
+      } catch (error) {
+        console.error('Erro ao carregar dados salvos:', error);
+        localStorage.removeItem('license_key');
+        localStorage.removeItem('auth_user');
+      }
     }
     setIsLoading(false);
-
-    // Handle OAuth callback
-    const handleCallback = async () => {
-      const fragment = window.location.hash.substring(1);
-      const params = new URLSearchParams(fragment);
-      const accessToken = params.get('access_token');
-
-      if (accessToken) {
-        try {
-          // Fetch user data from Discord API
-          const response = await fetch('https://discord.com/api/users/@me', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-
-          if (response.ok) {
-            const userData: DiscordUser = await response.json();
-            setUser(userData);
-            localStorage.setItem('discord_user', JSON.stringify(userData));
-            localStorage.setItem('discord_token', accessToken);
-
-            // Clean up URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      }
-    };
-
-    handleCallback();
   }, []);
 
-  const login = () => {
-    const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&response_type=token&scope=identify%20email`;
+  const login = async (key: string) => {
+    if (!key || key.trim() === '') {
+      toast.error('Chave inválida', {
+        description: 'Por favor, insira uma chave de autenticação válida'
+      });
+      return;
+    }
 
-    window.location.href = authUrl;
+    try {
+      setIsLoading(true);
+      const backendUrl = getBackendUrl();
+      const apiUrl = `${backendUrl}/api/auth/validate`;
+      const cleanKey = key.trim();
+      
+      console.log('🔐 Validando chave de autenticação...');
+      console.log(`📡 URL: ${apiUrl}`);
+      console.log(`🔑 Key length: ${cleanKey.length} caracteres`);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: cleanKey }),
+      });
+
+      console.log(`📥 Response status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Erro ao validar chave' }));
+        console.error('❌ Erro na resposta:', errorData);
+        
+        // Mostrar erro do backend ao usuário
+        toast.error('❌ Erro ao validar chave', {
+          description: errorData.message || `Erro ${response.status}: ${response.statusText}`,
+          duration: 5000,
+        });
+        
+        throw new Error(errorData.message || `Erro ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Resposta recebida:', data);
+
+      // Mostrar resposta do backend ao usuário
+      if (data.valid) {
+        const userData: User = {
+          id: data.userId || 'unknown',
+          licenseKey: key.trim(),
+          isValid: true,
+        };
+
+        setUser(userData);
+        setLicenseKeyState(key.trim());
+        localStorage.setItem('license_key', key.trim());
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+
+        toast.success('✅ Autenticação realizada com sucesso!', {
+          description: data.message || 'Bem-vindo de volta!',
+          duration: 4000,
+        });
+      } else {
+        const errorMessage = data.message || 'Chave de autenticação inválida';
+        toast.error('❌ Falha na autenticação', {
+          description: errorMessage,
+          duration: 5000,
+        });
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Erro na autenticação:', error);
+      
+      // Se já mostrou o toast acima, não mostra novamente
+      if (error instanceof Error && error.message.includes('Erro ao validar chave')) {
+        throw error;
+      }
+      
+      // Erro de rede ou outro erro não tratado
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível validar a chave de autenticação';
+      toast.error('❌ Erro na autenticação', {
+        description: errorMessage,
+        duration: 5000,
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
     setLicenseKeyState(null);
-    localStorage.removeItem('discord_user');
-    localStorage.removeItem('discord_token');
     localStorage.removeItem('license_key');
+    localStorage.removeItem('auth_user');
+
+    toast.success('Logout realizado', {
+      description: 'Você foi desconectado com sucesso'
+    });
   };
 
   const setLicenseKey = (key: string) => {

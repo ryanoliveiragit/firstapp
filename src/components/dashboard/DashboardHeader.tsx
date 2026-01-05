@@ -1,12 +1,5 @@
 import { UserBadge } from "./UserBadge";
-
-interface User {
-  id: string;
-  username: string;
-  avatar?: string;
-  discriminator?: string;
-  email?: string;
-}
+import { User } from "@/contexts/AuthContext";
 
 interface DashboardHeaderProps {
   activeTab: string;
