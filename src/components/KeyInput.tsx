@@ -144,8 +144,8 @@ const KeyInput = () => {
       <div className="ai-grid-bg" />
 
       {/* Glow orbs */}
-      <div className="glow-orb-cyan" style={{ top: '10%', left: '15%' }} />
-      <div className="glow-orb-purple" style={{ bottom: '15%', right: '10%' }} />
+      <div className="glow-orb-primary" style={{ top: '10%', left: '15%' }} />
+      <div className="glow-orb-secondary" style={{ bottom: '15%', right: '10%' }} />
 
       {/* Particles */}
       <div className="particle" style={{ top: '20%', left: '25%' }} />
@@ -188,12 +188,12 @@ const KeyInput = () => {
                     onPaste={handlePaste}
                     placeholder="XXXX-XXXX-XXXX-XXXX"
                     maxLength={19}
-                    className={`h-14 pl-12 pr-24 text-center font-mono text-lg tracking-wider bg-background/50 transition-all ${
+                    className={`h-14 pl-12 pr-24 text-center font-mono text-lg tracking-wider bg-card/50 transition-all ${
                       error
                         ? 'border-destructive focus-visible:ring-destructive'
                         : isValidating
-                        ? 'border-primary shadow-[0_0_15px_rgba(0,217,255,0.3)]'
-                        : 'border-primary/30 focus-visible:border-primary focus-visible:shadow-[0_0_15px_rgba(0,217,255,0.2)]'
+                        ? 'border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
+                        : 'border-border focus-visible:border-primary focus-visible:shadow-[0_0_15px_hsl(var(--primary)/0.2)]'
                     }`}
                     disabled={isValidating}
                     autoFocus
@@ -210,7 +210,7 @@ const KeyInput = () => {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-medium shadow-lg button-shine button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(0,217,255,0.3)]"
+                className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-medium shadow-lg button-shine button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
                 disabled={isValidating || !key}
               >
                 {isValidating ? (

@@ -132,8 +132,8 @@ const Login = () => {
       <div className="ai-grid-bg" />
 
       {/* Glow orbs */}
-      <div className="glow-orb-cyan" style={{ top: '10%', left: '15%' }} />
-      <div className="glow-orb-purple" style={{ bottom: '15%', right: '10%' }} />
+      <div className="glow-orb-primary" style={{ top: '10%', left: '15%' }} />
+      <div className="glow-orb-secondary" style={{ bottom: '15%', right: '10%' }} />
 
       {/* Particles */}
       <div className="particle" style={{ top: '20%', left: '25%' }} />
@@ -191,12 +191,12 @@ const Login = () => {
                       }}
                       onPaste={handlePaste}
                       placeholder="XXXX-XXXX-XXXX-XXXX"
-                      className={`w-full pl-10 pr-20 h-12 font-mono text-center tracking-wider transition-all bg-background/50 ${
+                      className={`w-full pl-10 pr-20 h-12 font-mono text-center tracking-wider transition-all bg-card/50 ${
                         error
                           ? 'border-destructive focus-visible:ring-destructive'
                           : isLoading
-                          ? 'border-primary shadow-[0_0_15px_rgba(0,217,255,0.3)]'
-                          : 'border-primary/30 focus-visible:border-primary focus-visible:shadow-[0_0_15px_rgba(0,217,255,0.2)]'
+                          ? 'border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
+                          : 'border-border focus-visible:border-primary focus-visible:shadow-[0_0_15px_hsl(var(--primary)/0.2)]'
                       }`}
                       disabled={isLoading}
                       autoFocus
@@ -214,7 +214,7 @@ const Login = () => {
                 <Button
                   type="submit"
                   disabled={isLoading || !key.trim()}
-                  className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg button-shine button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(0,217,255,0.3)]"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg button-shine button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
                   size="lg"
                 >
                   {isLoading ? (
