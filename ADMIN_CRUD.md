@@ -101,15 +101,16 @@ adminService.resetKeyUsage(id: string): Promise<LicenseKey>
 
 ## 🎯 Integração
 
-### Sidebar
-Novo item no menu:
-- **ID**: `admin`
-- **Label**: "Admin"
-- **Ícone**: Database (Lucide)
-- **Posição**: Entre "Status" e "Configurações"
+### Rota Separada
+A área de admin é **completamente separada** do aplicativo principal:
 
-### Dashboard
-Renderiza `<AdminPanel />` quando `activeTab === "admin"`
+- **Rota**: `/admin` (acesso direto via URL)
+- **Sem autenticação**: Não requer chave de licença
+- **Independente**: Não aparece no menu do usuário
+- **Exclusivo para administradores**: Apenas acessível diretamente
+
+### App.tsx
+Verifica se a rota é `/admin` e renderiza `<AdminPanel />` diretamente, pulando todo o fluxo de autenticação (Login → KeyInput → Dashboard)
 
 ## 🎨 Componentes Visuais
 
@@ -152,8 +153,9 @@ Se não definida, usa o fallback: `http://localhost:3000/api`
 ## 🚦 Como Usar
 
 1. **Acessar o Admin**
-   - Fazer login no sistema
-   - Clicar em "Admin" no sidebar
+   - Acessar diretamente a URL: `/admin`
+   - Não precisa fazer login ou inserir chave de licença
+   - Área exclusiva para administradores
 
 2. **Criar uma Chave**
    - Clicar em "Nova Chave"
@@ -189,14 +191,19 @@ Se não definida, usa o fallback: `http://localhost:3000/api`
 
 ## 🔐 Segurança
 
-⚠️ **IMPORTANTE**: Esta interface não possui autenticação/autorização própria.
+⚠️ **MUITO IMPORTANTE**: Esta interface é acessível diretamente via `/admin` **SEM NENHUMA AUTENTICAÇÃO**.
 
-Recomendações para produção:
-- Adicionar autenticação admin
-- Implementar RBAC (Role-Based Access Control)
-- Proteger rotas admin no backend
-- Adicionar rate limiting
-- Logs de auditoria
+**CRÍTICO para produção:**
+- ⚠️ **Adicionar autenticação admin obrigatória**
+- ⚠️ **Implementar RBAC (Role-Based Access Control)**
+- ⚠️ **Proteger rotas admin no backend**
+- ⚠️ **Bloquear acesso não autorizado à rota `/admin`**
+- ⚠️ **Adicionar rate limiting**
+- ⚠️ **Implementar logs de auditoria**
+- ⚠️ **Considerar IP whitelisting**
+- ⚠️ **2FA para administradores**
+
+**Status Atual:** Área admin aberta sem proteção (apenas para desenvolvimento/testes)
 
 ## 🎨 Melhorias Futuras
 

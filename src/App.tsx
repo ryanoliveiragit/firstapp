@@ -4,6 +4,7 @@ import { useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import KeyInput from "./components/KeyInput";
 import Dashboard from "./components/Dashboard";
+import AdminPanel from "./components/admin/AdminPanel";
 import { Toaster } from "sonner";
 
 // Mensagens de análise da IA
@@ -31,6 +32,21 @@ const getAnalysisMessages = (validationResult: 'success' | 'error' | null) => {
 function App() {
   const { user, licenseKey, isLoading, isValidating, validationResult, backendMessages } = useAuth();
   const [currentMessage, setCurrentMessage] = useState('');
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+
+  // Verificar se está na rota /admin
+  useEffect(() => {
+    const checkAdminRoute = () => {
+      const path = window.location.pathname;
+      setIsAdminRoute(path === '/admin' || path.startsWith('/admin/'));
+    };
+
+    checkAdminRoute();
+
+    // Listen for route changes
+    window.addEventListener('popstate', checkAdminRoute);
+    return () => window.removeEventListener('popstate', checkAdminRoute);
+  }, []);
 
   // Efeito para atualizar mensagens do backend com animação
   useEffect(() => {
@@ -52,6 +68,16 @@ function App() {
       }
     }
   }, [backendMessages, isValidating, validationResult]);
+
+  // Rota /admin - não precisa de autenticação
+  if (isAdminRoute) {
+    return (
+      <>
+        <Toaster position="top-right" richColors closeButton />
+        <AdminPanel />
+      </>
+    );
+  }
 
   // Mostrar loading apenas quando está validando a chave
   if (isValidating) {
