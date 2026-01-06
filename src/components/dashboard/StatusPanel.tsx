@@ -228,8 +228,8 @@ export function StatusPanel() {
         <Card className="card-hover animate-fade-in glass-panel glass-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center border border-blue-500/20">
-                <Monitor className="w-5 h-5 text-blue-500" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                <Monitor className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold">{osInfo.name}</p>
@@ -249,8 +249,8 @@ export function StatusPanel() {
         <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in glass-panel glass-card">
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center border border-blue-500/20">
-                <Cpu className="w-6 h-6 text-blue-500" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                <Cpu className="w-6 h-6 text-primary" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg mb-1">CPU</h3>
@@ -275,8 +275,8 @@ export function StatusPanel() {
         <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in glass-panel glass-card" style={{ animationDelay: '100ms' }}>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center border border-orange-500/20">
-                <Gauge className="w-6 h-6 text-orange-500" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                <Gauge className="w-6 h-6 text-primary" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg mb-1">GPU</h3>
@@ -299,8 +299,8 @@ export function StatusPanel() {
         <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in md:col-span-2 lg:col-span-1 glass-panel glass-card" style={{ animationDelay: '200ms' }}>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center border border-purple-500/20">
-                <MemoryStick className="w-6 h-6 text-purple-500" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                <MemoryStick className="w-6 h-6 text-primary" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg mb-1">RAM</h3>

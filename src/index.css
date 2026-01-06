@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  SISTEMA DE CORES - REGRA 60-30-10
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  60% - COR DOMINANTE (Base/Neutra):
+    • Fundos principais, cards, áreas extensas
+    • Cria canvas limpo e respiração visual
+
+  30% - COR SECUNDÁRIA (Contraste):
+    • Bordas, divisores, textos secundários
+    • Adiciona profundidade e estrutura
+
+  10% - COR DE DESTAQUE (Ação):
+    • Botões primários, links, badges
+    • Guia atenção para ações importantes
+*/
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -27,45 +44,35 @@
   }
 
   .dark {
-    /* Background - Escuro Minimalista */
-    --background: 0 0% 4%;        /* #0a0a0a - ultra escuro */
-    --foreground: 0 0% 98%;        /* #fafafa - branco suave */
+    /* ━━━ 60% - COR DOMINANTE (Base Neutra) ━━━ */
+    --background: 0 0% 4%;           /* #0a0a0a - Background principal (60%) */
+    --card: 0 0% 8%;                 /* #141414 - Cards e containers (60%) */
+    --popover: 0 0% 8%;              /* #141414 - Popovers (60%) */
 
-    /* Cards - Levemente mais claro */
-    --card: 0 0% 8%;               /* #141414 - cinza muito escuro */
-    --card-foreground: 0 0% 98%;
+    /* ━━━ 30% - COR SECUNDÁRIA (Contraste/Estrutura) ━━━ */
+    --border: 0 0% 12%;              /* #1e1e1e - Bordas sutis (30%) */
+    --input: 0 0% 12%;               /* #1e1e1e - Inputs (30%) */
+    --secondary: 0 0% 12%;           /* #1e1e1e - Elementos secundários (30%) */
+    --accent: 0 0% 16%;              /* #292929 - Accent/hover states (30%) */
+    --muted: 0 0% 12%;               /* #1e1e1e - Muted backgrounds (30%) */
+    --muted-foreground: 0 0% 61%;    /* #9ca3af - Textos secundários (30%) */
 
-    /* Popover */
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
+    /* ━━━ 10% - COR DE DESTAQUE (Ação/Ênfase) ━━━ */
+    --primary: 142 76% 36%;          /* #16a34a - Verde ação (10%) */
+    --ring: 142 76% 36%;             /* #16a34a - Focus rings (10%) */
+    --success: 142 76% 36%;          /* #16a34a - Estados de sucesso (10%) */
 
-    /* Primary - Verde Suave (inspirado nas refs) */
-    --primary: 142 76% 36%;        /* #16a34a - verde */
-    --primary-foreground: 0 0% 100%;
+    /* ━━━ Cores de Texto (Hierarquia) ━━━ */
+    --foreground: 0 0% 98%;          /* #fafafa - Texto primário */
+    --card-foreground: 0 0% 98%;     /* #fafafa - Texto em cards */
+    --popover-foreground: 0 0% 98%;  /* #fafafa - Texto em popovers */
+    --primary-foreground: 0 0% 100%; /* #ffffff - Texto em botões primários */
+    --secondary-foreground: 0 0% 98%; /* #fafafa - Texto em elementos secundários */
+    --accent-foreground: 0 0% 98%;   /* #fafafa - Texto em accents */
 
-    /* Secondary - Cinza Sutil */
-    --secondary: 0 0% 12%;         /* #1e1e1e */
-    --secondary-foreground: 0 0% 98%;
-
-    /* Accent - Cinza Médio */
-    --accent: 0 0% 16%;            /* #292929 */
-    --accent-foreground: 0 0% 98%;
-
-    /* Muted - Cinza Intermediário */
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 61%;  /* #9ca3af */
-
-    /* Destructive - Vermelho Suave */
-    --destructive: 0 72% 51%;      /* #dc2626 */
+    /* ━━━ Estados Especiais ━━━ */
+    --destructive: 0 72% 51%;        /* #dc2626 - Vermelho para ações destrutivas */
     --destructive-foreground: 0 0% 98%;
-
-    /* Borders - Muito Sutis */
-    --border: 0 0% 12%;            /* #1e1e1e - quase invisível */
-    --input: 0 0% 12%;
-    --ring: 142 76% 36%;           /* verde para focus */
-
-    /* Success - Verde */
-    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
   }
 }
@@ -87,7 +94,7 @@
     font-family: 'JetBrains Mono', 'Courier New', monospace;
   }
 
-  /* Scrollbar Minimalista */
+  /* Scrollbar Minimalista - 30% (Secundária) */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -98,17 +105,17 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.2);
+    background: hsl(var(--muted) / 0.5);
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.3);
+    background: hsl(var(--accent));
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+    scrollbar-color: hsl(var(--muted) / 0.5) transparent;
   }
 }
 
@@ -167,66 +174,91 @@
   animation: slide-in-left 0.3s ease-out;
 }
 
-/* Layout Minimalista */
+/* ━━━ COMPONENTES - APLICANDO 60-30-10 ━━━ */
+
+/* 60% - Layout Principal (Base) */
 .app-shell {
   @apply min-h-screen bg-background;
 }
 
-/* Cards Minimalistas - Sem Glassmorphism Pesado */
+/* 60% - Cards (Dominante) */
 .glass-panel {
-  @apply bg-card border border-border/50 rounded-xl;
+  @apply bg-card border border-border rounded-xl;
   box-shadow: 0 1px 2px hsl(var(--background) / 0.5);
 }
 
 .glass-card {
   @apply bg-card/50 border border-border/40 rounded-lg;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
+/* 30% - Hover States (Secundária) */
 .glass-card:hover {
-  @apply border-border bg-card/70;
+  @apply border-accent/60 bg-card/80;
 }
 
-/* Badges Minimalistas */
+/* 10% - Badges de Ação (Destaque) */
 .glow-pill {
   @apply inline-flex items-center gap-1.5 rounded-full text-xs px-3 py-1 border;
 }
 
-/* Hover Effects Sutis */
-.card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px hsl(var(--background) / 0.5);
-}
-
-/* Text Glow Sutil */
-.text-glow {
-  text-shadow: 0 0 20px hsl(var(--foreground) / 0.1);
-}
-
-/* Estados de Success */
+/* 10% - Badge de Sucesso (Verde - Ação) */
 .success-badge {
-  @apply bg-green-500/10 text-green-400 border-green-500/20;
+  @apply bg-primary/10 text-primary border-primary/30;
 }
 
 .success-text {
-  @apply text-green-400;
+  @apply text-primary;
 }
 
-/* Skeleton Loading */
+/* 30% - Hover Effects (Secundária) */
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  @apply shadow-lg;
+  box-shadow: 0 8px 24px hsl(var(--background) / 0.8);
+}
+
+/* Text Hierarchy */
+.text-glow {
+  text-shadow: 0 0 24px hsl(var(--foreground) / 0.15);
+}
+
+/* Skeleton Loading - 30% (Secundária) */
 @keyframes skeleton-line {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.6; }
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
 }
 
 .skeleton-line {
   animation: skeleton-line 2s ease-in-out infinite;
 }
 
-/* Button Styles Minimalistas */
+/* 10% - Button Primary (Destaque - Verde) */
+.btn-primary {
+  @apply bg-primary text-primary-foreground;
+  @apply hover:bg-primary/90;
+  @apply focus-visible:ring-2 focus-visible:ring-primary/50;
+  @apply transition-all duration-200;
+  box-shadow: 0 1px 2px hsl(var(--primary) / 0.2);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
+}
+
+/* 30% - Button Secondary (Secundária) */
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground;
+  @apply hover:bg-accent;
+  @apply border border-border;
+  @apply transition-all duration-200;
+}
+
+/* Button Shine Effect */
 .button-shine {
   position: relative;
   overflow: hidden;
@@ -252,23 +284,66 @@
   left: 100%;
 }
 
-/* Focus States */
+/* 10% - Focus States (Destaque - Verde) */
 @layer base {
   *:focus-visible {
     @apply outline-none ring-2 ring-primary/50 ring-offset-2 ring-offset-background;
   }
 }
 
-/* Remove estilos pesados antigos */
-.grid-overlay {
-  display: none;
-}
-
-.glow-orb {
-  display: none;
-}
-
+/* 60% - Console Surface (Dominante) */
 .console-surface {
-  @apply bg-card/80 border border-border rounded-xl;
+  @apply bg-card border border-border rounded-xl;
   backdrop-filter: blur(8px);
+}
+
+/* ━━━ ESTADOS E INDICADORES ━━━ */
+
+/* 10% - Active/Online (Verde - Destaque) */
+.status-active {
+  @apply text-primary;
+}
+
+.status-active-bg {
+  @apply bg-primary/10 border-primary/30;
+}
+
+/* 30% - Inactive/Disabled (Secundária) */
+.status-inactive {
+  @apply text-muted-foreground;
+}
+
+.status-inactive-bg {
+  @apply bg-muted border-border;
+}
+
+/* Destructive (Vermelho - Especial) */
+.status-destructive {
+  @apply text-destructive;
+}
+
+.status-destructive-bg {
+  @apply bg-destructive/10 border-destructive/30;
+}
+
+/* ━━━ UTILITIES ━━━ */
+
+/* 30% - Dividers (Secundária) */
+.divider-line {
+  @apply h-px bg-gradient-to-r from-transparent via-border to-transparent;
+}
+
+/* 60% - Spacing Sections */
+.section-spacing {
+  @apply space-y-8;
+}
+
+/* 30% - Section Headers */
+.section-header {
+  @apply flex items-center gap-2 text-sm font-semibold;
+  color: hsl(var(--muted-foreground));
+}
+
+.section-header-line {
+  @apply flex-1 h-px bg-gradient-to-r from-border to-transparent;
 }

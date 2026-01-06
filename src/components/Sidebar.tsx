@@ -24,7 +24,6 @@ export default function Sidebar({ activeTab, setActiveTab, isOptimizationsLoadin
   return (
     <div className="relative w-64 h-screen border-r border-white/10 glass-panel flex flex-col animate-slide-in-left overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/0 pointer-events-none" />
-      <div className="absolute inset-0 grid-overlay opacity-50" />
       <div className="p-5 pb-4 relative z-10">
         <div className="flex items-center gap-3 animate-fade-in-up">
           <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center overflow-hidden hover:scale-105 transition-transform duration-300">

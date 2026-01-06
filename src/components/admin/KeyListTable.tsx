@@ -174,7 +174,7 @@ export default function KeyListTable({ keys, onEdit, onDelete, onReset }: KeyLis
                         className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                         title="Resetar uso"
                       >
-                        <RotateCcw className="w-4 h-4 text-blue-400" strokeWidth={2} />
+                        <RotateCcw className="w-4 h-4 text-primary" strokeWidth={2} />
                       </button>
                       <button
                         onClick={() => onEdit(key)}

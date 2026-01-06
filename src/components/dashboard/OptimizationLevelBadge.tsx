@@ -9,20 +9,20 @@ const levelConfig = {
   basica: {
     label: 'Básico',
     icon: Activity,
-    color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    glowColor: 'bg-blue-500/20',
+    color: 'bg-primary/10 text-primary border-primary/20',
+    glowColor: 'bg-primary/20',
   },
   intermediaria: {
     label: 'Intermediário',
     icon: Zap,
-    color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    glowColor: 'bg-yellow-500/20',
+    color: 'bg-primary/15 text-primary border-primary/30',
+    glowColor: 'bg-primary/30',
   },
   avancada: {
     label: 'Avançado',
     icon: Rocket,
-    color: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    glowColor: 'bg-purple-500/20',
+    color: 'bg-primary/20 text-primary border-primary/40',
+    glowColor: 'bg-primary/40',
   },
 };
 
