@@ -58,7 +58,7 @@ export function NetworkOptimizerCard({ isExecuting, onExecute }: NetworkOptimize
       <CardContent className="flex-1 flex flex-col pt-0 px-6 pb-6">
         <div className="flex-1 flex flex-col space-y-5">
           <ul className="space-y-2">
-            {optimizations.map((item, index) => (
+            {optimizations.map((item) => (
               <li
                 key={item}
                 className="flex items-start gap-2 text-sm text-muted-foreground"

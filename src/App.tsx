@@ -30,7 +30,7 @@ const getAnalysisMessages = (validationResult: 'success' | 'error' | null) => {
 };
 
 function App() {
-  const { user, licenseKey, isLoading, isValidating, validationResult, backendMessages } = useAuth();
+  const { user, licenseKey, isValidating, validationResult, backendMessages } = useAuth();
   const [currentMessage, setCurrentMessage] = useState('');
   const [isAdminRoute, setIsAdminRoute] = useState(false);
 

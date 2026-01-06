@@ -22,7 +22,6 @@ import {
 } from "./ui/card";
 import { Info } from "lucide-react";
 import { DashboardHeader } from "./dashboard/DashboardHeader";
-import { Button } from "./ui/button";
 
 type OptimizationLevel = "basica" | "intermediaria" | "avancada";
 
@@ -385,12 +384,6 @@ export default function Dashboard() {
     setActiveTab(tabId);
   };
 
-  const optimizationFlowSteps = [
-    { key: "intro", label: "Otimizações" },
-    { key: "fetch", label: "Buscando otimizações da sua key" },
-    { key: "found", label: "Otimização avançada encontrada" },
-    { key: "redirecting", label: "Redirecionando" },
-  ] as const;
 
   return (
     <div className="app-shell">
