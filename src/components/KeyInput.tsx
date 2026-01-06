@@ -46,27 +46,19 @@ const KeyInput = () => {
     hasValidatedRef.current = true;
     setError('');
 
-    // Toast de loading com mensagens contextuais
-    const loadingMessages = [
-      'Validando sua chave...',
-      'Autenticando...',
-      'Conectando ao sistema...',
-    ];
-    const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
-
-    const loadingToast = toast.loading(randomMessage, {
-      description: 'Aguarde enquanto verificamos suas credenciais',
-      id: 'validating-key',
-      duration: Infinity,
-    });
-
     try {
       await login(cleanKey);
-      toast.dismiss(loadingToast);
+
+      // Toast de sucesso
+      toast.success('Chave ativada com sucesso!', {
+        description: 'Bem-vindo ao Synapse',
+        duration: 4000,
+      });
     } catch (error) {
-      toast.dismiss(loadingToast);
       setError('Chave de licença inválida');
       hasValidatedRef.current = false;
+
+      // Toast de erro já é mostrado pelo AuthContext
     } finally {
       setIsValidating(false);
     }
@@ -136,10 +128,27 @@ const KeyInput = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+      {/* Loading Full Screen Overlay */}
+      {isValidating && (
+        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-300">
+          <div className="flex flex-col items-center gap-4 animate-in zoom-in-95 duration-500">
+            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
+            <div className="text-center space-y-2">
+              <p className="text-lg font-medium text-foreground animate-pulse">
+                Verificando sua chave
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Aguarde enquanto validamos suas credenciais
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 animate-in fade-in-50 duration-700">
           <h1 className="text-3xl font-semibold tracking-tight">
             Synapse
           </h1>
@@ -149,7 +158,7 @@ const KeyInput = () => {
         </div>
 
         {/* Card */}
-        <Card className="border-border/50">
+        <Card className="border-border/50 animate-in fade-in-50 slide-in-from-bottom-4 duration-700" style={{ animationDelay: '150ms' }}>
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl font-medium">Chave de acesso</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -225,7 +234,7 @@ const KeyInput = () => {
         </Card>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-muted-foreground animate-in fade-in duration-700" style={{ animationDelay: '300ms' }}>
           v1.5.0
         </p>
       </div>
