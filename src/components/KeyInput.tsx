@@ -132,6 +132,19 @@ const KeyInput = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+      {/* Loading Screen */}
+      {isValidating && (
+        <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 border-2 border-border rounded-full"></div>
+              <div className="absolute inset-0 w-10 h-10 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-sm text-muted-foreground">Verificando sua chave...</p>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 animate-in fade-in-50 duration-700">
@@ -206,14 +219,7 @@ const KeyInput = () => {
                 disabled={isValidating || !isKeyComplete}
                 size="default"
               >
-                {isValidating ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Validando...</span>
-                  </span>
-                ) : (
-                  'Continuar'
-                )}
+                Continuar
               </Button>
             </form>
           </CardContent>
