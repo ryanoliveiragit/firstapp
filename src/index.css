@@ -27,49 +27,49 @@
   }
 
   .dark {
-    /* Fundo escuro profundo */
-    --background: 250 50% 6%;
-    --foreground: 250 10% 98%;
+    /* Fundo ultra escuro - estilo Vercel/v0 */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    /* Cards com leve tom roxo */
-    --card: 250 45% 8%;
-    --card-foreground: 250 10% 98%;
+    /* Cards com fundo levemente mais claro */
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
 
     /* Popover */
-    --popover: 250 45% 8%;
-    --popover-foreground: 250 10% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Roxo/Violeta como cor primária */
-    --primary: 270 80% 60%;
-    --primary-foreground: 250 10% 98%;
+    /* Primary - branco/cinza claro */
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
 
-    /* Rosa como cor secundária */
-    --secondary: 330 80% 65%;
-    --secondary-foreground: 250 10% 98%;
+    /* Secondary - cinza médio */
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    /* Cyan/Verde como accent */
-    --accent: 170 70% 55%;
-    --accent-foreground: 250 50% 6%;
+    /* Accent - cinza claro */
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
 
     /* Muted */
-    --muted: 250 40% 15%;
-    --muted-foreground: 250 10% 60%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 250 10% 98%;
+    /* Destructive - vermelho suave */
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
 
-    /* Borders e inputs */
-    --border: 250 40% 18%;
-    --input: 250 40% 18%;
-    --ring: 270 80% 60%;
+    /* Borders e inputs - cinza muito escuro */
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 83%;
 
-    /* Chart colors usando a paleta */
-    --chart-1: 270 80% 60%; /* roxo */
-    --chart-2: 330 80% 65%; /* rosa */
-    --chart-3: 170 70% 55%; /* cyan/verde */
-    --chart-4: 280 70% 70%; /* violeta claro */
-    --chart-5: 340 75% 70%; /* rosa claro */
+    /* Chart colors - escala de cinza */
+    --chart-1: 0 0% 90%;
+    --chart-2: 0 0% 70%;
+    --chart-3: 0 0% 50%;
+    --chart-4: 0 0% 30%;
+    --chart-5: 0 0% 20%;
   }
 }
 
