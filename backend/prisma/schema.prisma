@@ -19,6 +19,9 @@ model LicenseKey {
   updatedAt   DateTime @updatedAt
   expiresAt   DateTime?
   lastUsedAt  DateTime?
+  maxUses     Int      @default(1)
+  usedCount   Int      @default(0)
+  usedBy      String?
 
   @@map("license_keys")
 }

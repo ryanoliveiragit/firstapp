@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Key, XCircle, Eye, EyeOff } from "lucide-react";
+import { Loader2, XCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -24,7 +23,8 @@ const Login = () => {
   };
 
   const validateKey = async (keyToValidate: string) => {
-    const cleanKey = keyToValidate.trim().replace(/-/g, '');
+    // Limitar a chave a 16 caracteres (sem hífens) para evitar duplicação
+    let cleanKey = keyToValidate.trim().replace(/-/g, '').substring(0, 16);
 
     if (!cleanKey || cleanKey.length < 12) {
       return;
@@ -74,14 +74,17 @@ const Login = () => {
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    const cleanKey = pastedText.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    // Limitar a 16 caracteres para evitar duplicação
+    let cleanKey = pastedText.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 16);
     
     if (cleanKey.length >= 12) {
       // Formatar a chave colada
       const formatted = cleanKey.match(/.{1,4}/g)?.join('-') || cleanKey;
       setKey(formatted);
       setError('');
+      hasValidatedRef.current = false;
       
       // Validar automaticamente após um pequeno delay
       if (validationTimeoutRef.current) {
@@ -119,107 +122,112 @@ const Login = () => {
   const isKeyComplete = key.replace(/-/g, '').length >= 12;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-6 relative">
       {/* Loading Screen */}
       {isLoading && (
-        <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 border-2 border-border rounded-full"></div>
-              <div className="absolute inset-0 w-10 h-10 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-2 border-zinc-700 rounded-full"></div>
+              <div className="absolute inset-0 w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
-            <p className="text-sm text-muted-foreground">Verificando sua chave...</p>
+            <p className="text-sm text-white/60">Verificando sua chave...</p>
           </div>
         </div>
       )}
 
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-lg space-y-10">
         {/* Header */}
-        <div className="text-center space-y-2 animate-in fade-in-50 duration-700">
-          <h1 className="text-3xl font-semibold tracking-tight">
+        <div className="text-center space-y-3">
+          <h1 className="text-4xl font-light text-white tracking-tight">
             Synapse
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-white/60 font-light">
             Sistema de otimização inteligente
           </p>
         </div>
 
-        {/* Card */}
-        <Card className="border-border/50 animate-in fade-in-50 slide-in-from-bottom-4 duration-700" style={{ animationDelay: '150ms' }}>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-xl font-medium">Bem-vindo</CardTitle>
-            <CardDescription>
-              Insira sua chave de acesso para continuar
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <div className="relative">
-                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={key}
-                    onChange={(e) => {
-                      const value = e.target.value.toUpperCase();
-                      setKey(value);
-                      setError('');
-                      hasValidatedRef.current = false;
-                    }}
-                    onPaste={handlePaste}
-                    placeholder="XXXX-XXXX-XXXX-XXXX"
-                    className={`pl-9 pr-16 h-11 font-mono text-sm ${
-                      error
-                        ? 'border-destructive focus-visible:ring-destructive'
-                        : ''
-                    }`}
+        {/* Form Container */}
+        <div className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-3">
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={key}
+                  onChange={(e) => {
+                    let value = e.target.value.toUpperCase();
+                    // Remover caracteres inválidos
+                    value = value.replace(/[^A-Z0-9-]/g, '');
+                    // Limitar tamanho máximo (19 caracteres com hífens: XXXX-XXXX-XXXX-XXXX)
+                    if (value.replace(/-/g, '').length > 16) {
+                      value = value.replace(/-/g, '').substring(0, 16);
+                      // Reformatar
+                      value = value.match(/.{1,4}/g)?.join('-') || value;
+                    }
+                    setKey(value);
+                    setError('');
+                    hasValidatedRef.current = false;
+                  }}
+                  onPaste={handlePaste}
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  maxLength={19}
+                  className={`
+                    h-12 bg-zinc-900/50 border border-zinc-700/50 text-white 
+                    placeholder:text-zinc-500 font-mono text-sm
+                    focus:border-zinc-600 focus:ring-0 focus:outline-none
+                    transition-colors
+                    ${error ? 'border-red-500/50 focus:border-red-500' : ''}
+                    ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                  disabled={isLoading}
+                  autoFocus
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {isLoading && (
+                    <Loader2 className="w-4 h-4 animate-spin text-white/40" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-white/40 hover:text-white/60 transition-colors"
                     disabled={isLoading}
-                    autoFocus
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    {isLoading && (
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                      disabled={isLoading}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  </button>
                 </div>
-
-                {error && (
-                  <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                    <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>{error}</span>
-                  </div>
-                )}
               </div>
 
-              <Button
-                type="submit"
-                disabled={isLoading || !isKeyComplete}
-                className="w-full h-10"
-                size="default"
-              >
-                Continuar
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+              {error && (
+                <div className="flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md p-3">
+                  <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading || !isKeyComplete}   
+              variant={"outline"}
+              className="w-full h-12 bg-white text-black hover:bg-white/90 font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Verificando...' : 'Continuar'}
+            </Button>
+          </form>
+        </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground animate-in fade-in duration-700" style={{ animationDelay: '300ms' }}>
-          v1.5.0
-        </p>
+        <div className="text-center">
+          <p className="text-xs text-white/40 font-light">
+            v1.5.0
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "firstapp",
-        "width": 1600,
-        "height": 800,
+        "width": 1100,
+        "height": 600,
         "resizable": false,
         "center": true
       }

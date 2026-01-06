@@ -29,6 +29,9 @@ async function main() {
         isValid: true,
         userId: 'user-example-123',
         // Não expira (expiresAt: null)
+        maxUses: 1,
+        usedCount: 0,
+        usedBy: null,
       },
     });
 

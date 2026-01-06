@@ -57,6 +57,13 @@ npm run seed:key
 
 Isso criará a chave `TEST-KEY-123456` no banco. Veja `CHAVE_EXEMPLO.md` para mais detalhes.
 
+5. Gerar novas chaves:
+```bash
+npm run generate:key
+```
+
+Isso gerará uma nova chave aleatória. Veja `GERAR_CHAVES.md` para mais opções e detalhes.
+
 ## 🏃 Executando
 
 ### Desenvolvimento
