@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileKey, FileCode2, Settings, User, LogOut, Zap, Activity, Loader2 } from 'lucide-react';
+import { FileKey, FileCode2, Settings, User, LogOut, Zap, Activity, Loader2, Database } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,6 +13,7 @@ const menuItems = [
   { id: 'optimizations', label: 'Otimizações', icon: FileKey },
   { id: 'utilities', label: 'Utilitários', icon: FileCode2 },
   { id: 'status', label: 'Status', icon: Activity },
+  { id: 'admin', label: 'Admin', icon: Database },
   { id: 'config', label: 'Configurações', icon: Settings },
   { id: 'profile', label: 'Perfil', icon: User },
 ];

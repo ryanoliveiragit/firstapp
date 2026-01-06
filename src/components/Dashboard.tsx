@@ -15,6 +15,7 @@ import { NetworkOptimizerCard } from "./dashboard/NetworkOptimizerCard";
 import { PerformanceOptimizerCard } from "./dashboard/PerformanceOptimizerCard";
 import { OptimizationLevelBadge } from "./dashboard/OptimizationLevelBadge";
 import { FPSExtremeCard } from "./dashboard/FPSExtremeCard";
+import AdminPanel from "./admin/AdminPanel";
 import {
   Card,
   CardContent,
@@ -608,6 +609,8 @@ export default function Dashboard() {
                 <ProfilePanel user={user} />
               </div>
             )}
+
+            {activeTab === "admin" && <AdminPanel />}
           </div>
         </div>
       </div>
