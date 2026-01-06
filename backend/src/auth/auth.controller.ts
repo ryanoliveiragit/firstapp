@@ -1,6 +1,7 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Logger, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ValidateKeyDto } from './dto/validate-key.dto';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,36 @@ export class AuthController {
         valid: false,
         message: 'Erro ao validar chave',
       };
+    }
+  }
+
+  @Post('validate-stream')
+  async validateKeyStream(@Body() dto: ValidateKeyDto, @Res() res: Response) {
+    this.logger.log(`🔐 Requisição de validação com stream recebida - Key: ${this.maskKey(dto.key)}`);
+    this.logger.debug(`📥 Chave recebida (completa): ${dto.key}`);
+    this.logger.debug(`📥 Tamanho da chave: ${dto.key.length} caracteres`);
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const sendEvent = (data: any) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    try {
+      const onProgress = (message: string) => {
+        sendEvent({ type: 'progress', message });
+      };
+
+      const result = await this.authService.validateKey(dto, onProgress);
+      sendEvent({ type: 'success', result });
+      res.end();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao validar chave';
+      sendEvent({ type: 'error', message: errorMessage });
+      res.end();
     }
   }
 

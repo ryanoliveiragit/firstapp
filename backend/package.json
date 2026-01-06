@@ -13,7 +13,9 @@
     "prisma:push": "prisma db push",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "seed:key": "ts-node scripts/seed-key.ts"
+    "seed:key": "ts-node scripts/seed-key.ts",
+    "generate:key": "ts-node scripts/generate-key.ts",
+    "list:keys": "ts-node scripts/list-keys.ts"
   },
   "keywords": [
     "nestjs",

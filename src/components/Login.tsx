@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Key, XCircle } from "lucide-react";
+import { Loader2, XCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -11,11 +10,32 @@ const Login = () => {
   const [key, setKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasValidatedRef = useRef(false);
 
+  // Validação de formato da chave
+  const isValidKeyFormat = (key: string): boolean => {
+    const cleanKey = key.replace(/-/g, '');
+    // Regex: aceita apenas letras maiúsculas e números, mínimo 12 caracteres
+    const keyRegex = /^[A-Z0-9]{12,}$/;
+    return keyRegex.test(cleanKey);
+  };
+
   const validateKey = async (keyToValidate: string) => {
-    if (!keyToValidate.trim() || keyToValidate.trim().length < 12) {
+    // Limitar a chave a 16 caracteres (sem hífens) para evitar duplicação
+    let cleanKey = keyToValidate.trim().replace(/-/g, '').substring(0, 16);
+
+    if (!cleanKey || cleanKey.length < 12) {
+      return;
+    }
+
+    if (!isValidKeyFormat(cleanKey)) {
+      setError('Formato de chave inválido');
+      toast.error('Formato inválido', {
+        description: 'A chave deve conter apenas letras maiúsculas e números',
+        duration: 4000,
+      });
       return;
     }
 
@@ -26,22 +46,21 @@ const Login = () => {
     setIsLoading(true);
     hasValidatedRef.current = true;
     setError('');
-    
-    // Toast de loading
-    const loadingToast = toast.loading('Validando chave de autenticação...', {
-      description: 'Aguarde enquanto verificamos sua chave',
-      duration: Infinity,
-      id: 'login-loading',
-    });
 
     try {
-      await login(keyToValidate.trim());
-      toast.dismiss(loadingToast);
+      await login(cleanKey);
+
+      // Toast de sucesso
+      toast.success('Chave ativada com sucesso!', {
+        description: 'Bem-vindo de volta ao Synapse',
+        duration: 4000,
+      });
     } catch (error) {
-      toast.dismiss(loadingToast);
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao tentar fazer login';
       setError(errorMessage);
-      hasValidatedRef.current = false; // Permite tentar novamente em caso de erro
+      hasValidatedRef.current = false;
+
+      // Toast de erro já é mostrado pelo AuthContext
     } finally {
       setIsLoading(false);
     }
@@ -55,14 +74,17 @@ const Login = () => {
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    const cleanKey = pastedText.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    // Limitar a 16 caracteres para evitar duplicação
+    let cleanKey = pastedText.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 16);
     
     if (cleanKey.length >= 12) {
       // Formatar a chave colada
       const formatted = cleanKey.match(/.{1,4}/g)?.join('-') || cleanKey;
       setKey(formatted);
       setError('');
+      hasValidatedRef.current = false;
       
       // Validar automaticamente após um pequeno delay
       if (validationTimeoutRef.current) {
@@ -96,117 +118,115 @@ const Login = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, isLoading]);
 
+  // Verifica se a chave está completa (mínimo 12 caracteres sem hífens)
+  const isKeyComplete = key.replace(/-/g, '').length >= 12;
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden ">
-
-   <img
-    src='/gradient-1.png'
-    className='absolute inset-0 blur-sm w-full h-full object-cover -z-10'
-  />
-
-
-      <div className="relative z-10 w-full max-w-md px-4">
-        <div className="space-y-8 animate-fade-in-up">
-          <div className="text-center space-y-4 animate-scale-in">
-
-            <div className="space-y-2">
-              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent animate-fade-in">
-                Synapse
-              </h1>
-              <p className="text-muted-foreground max-w-sm mx-auto animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                Plataforma inteligente para otimização de performance e tweaking avançado
-              </p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-6 relative">
+      {/* Loading Screen */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 border-2 border-zinc-700 rounded-full"></div>
+              <div className="absolute inset-0 w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
+            <p className="text-sm text-white/60">Verificando sua chave...</p>
           </div>
+        </div>
+      )}
 
-          <Card className=" backdrop-blur-xl shadow-2xl animate-scale-in hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500" style={{ animationDelay: '200ms' }}>
-            <CardHeader className="space-y-1 pb-4 justify-cente text-center">
-              <CardTitle className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</CardTitle>
-              <CardDescription>
-                Insira sua chave de autenticação para continuar
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    {isLoading && (
-                      <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 animate-spin text-primary" />
+      <div className="w-full max-w-lg space-y-10">
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <h1 className="text-4xl font-light text-white tracking-tight">
+            Synapse
+          </h1>
+          <p className="text-base text-white/60 font-light">
+            Sistema de otimização inteligente
+          </p>
+        </div>
+
+        {/* Form Container */}
+        <div className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-3">
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={key}
+                  onChange={(e) => {
+                    let value = e.target.value.toUpperCase();
+                    // Remover caracteres inválidos
+                    value = value.replace(/[^A-Z0-9-]/g, '');
+                    // Limitar tamanho máximo (19 caracteres com hífens: XXXX-XXXX-XXXX-XXXX)
+                    if (value.replace(/-/g, '').length > 16) {
+                      value = value.replace(/-/g, '').substring(0, 16);
+                      // Reformatar
+                      value = value.match(/.{1,4}/g)?.join('-') || value;
+                    }
+                    setKey(value);
+                    setError('');
+                    hasValidatedRef.current = false;
+                  }}
+                  onPaste={handlePaste}
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  maxLength={19}
+                  className={`
+                    h-12 bg-zinc-900/50 border border-zinc-700/50 text-white 
+                    placeholder:text-zinc-500 font-mono text-sm
+                    focus:border-zinc-600 focus:ring-0 focus:outline-none
+                    transition-colors
+                    ${error ? 'border-red-500/50 focus:border-red-500' : ''}
+                    ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                  disabled={isLoading}
+                  autoFocus
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {isLoading && (
+                    <Loader2 className="w-4 h-4 animate-spin text-white/40" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-white/40 hover:text-white/60 transition-colors"
+                    disabled={isLoading}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
                     )}
-                    <Input
-                      type="text"
-                      value={key}
-                      onChange={(e) => {
-                        setKey(e.target.value);
-                        setError('');
-                        hasValidatedRef.current = false; // Reset para permitir nova validação
-                      }}
-                      onPaste={handlePaste}
-                      placeholder="XXXX-XXXX-XXXX-XXXX"
-                      className={`w-full pl-10 pr-10 h-12 font-mono text-center tracking-wider transition-all ${
-                        error 
-                          ? 'border-destructive focus-visible:ring-destructive' 
-                          : isLoading
-                          ? 'border-primary'
-                          : ''
-                      }`}
-                      disabled={isLoading}
-                      autoFocus
-                    />
-                  </div>
-                  
-                  {error && (
-                    <div className="flex items-center gap-2 text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg animate-in slide-in-from-top-1">
-                      <XCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
+                  </button>
                 </div>
+              </div>
 
-                <Button
-                  type="submit"
-                  disabled={isLoading || !key.trim()}
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  size="lg"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Validando...</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Key className="w-4 h-4" />
-                      <span>Entrar</span>
-                    </span>
-                  )}
-                </Button>
-              </form>
-
-
-
-              <p className="text-xs text-center text-muted-foreground">
-                Ao continuar, você concorda com nossos{" "}
-                <button className="text-foreground/70 hover:text-foreground underline underline-offset-4 transition-colors">
-                  Termos de Serviço
-                </button>
-                {" "}e{" "}
-                <button className="text-foreground/70 hover:text-foreground underline underline-offset-4 transition-colors">
-                  Política de Privacidade
-                </button>
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '400ms' }}>
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span>Todos os sistemas operacionais</span>
+              {error && (
+                <div className="flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md p-3">
+                  <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
             </div>
-            <span>•</span>
-            <span>v1.5.0</span>
-          </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading || !isKeyComplete}   
+              variant={"outline"}
+              className="w-full h-12 bg-white text-black hover:bg-white/90 font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Verificando...' : 'Continuar'}
+            </Button>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center">
+          <p className="text-xs text-white/40 font-light">
+            v1.5.0
+          </p>
         </div>
       </div>
     </div>
