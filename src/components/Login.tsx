@@ -115,25 +115,11 @@ const Login = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, isLoading]);
 
+  // Verifica se a chave está completa (mínimo 12 caracteres sem hífens)
+  const isKeyComplete = key.replace(/-/g, '').length >= 12;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative">
-      {/* Loading Full Screen Overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-300">
-          <div className="flex flex-col items-center gap-4 animate-in zoom-in-95 duration-500">
-            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
-            <div className="text-center space-y-2">
-              <p className="text-lg font-medium text-foreground animate-pulse">
-                Verificando sua chave
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Aguarde enquanto validamos suas credenciais
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 animate-in fade-in-50 duration-700">
@@ -207,7 +193,7 @@ const Login = () => {
 
               <Button
                 type="submit"
-                disabled={isLoading || !key.trim()}
+                disabled={isLoading || !isKeyComplete}
                 className="w-full h-10"
                 size="default"
               >
