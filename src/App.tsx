@@ -85,7 +85,7 @@ function App() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-black relative">
         {/* Container principal com skeleton */}
         <div className="w-full max-w-2xl px-6 mb-12">
-          <div className="bg-zinc-900/50 border-2 border-dashed border-zinc-700/50 rounded-2xl p-10 relative backdrop-blur-sm">
+          <div>
             {/* Linhas skeleton animadas */}
             <div className="space-y-5">
               <div className="h-3 bg-zinc-800/30 rounded border border-dashed border-zinc-700/30 skeleton-line" style={{ width: '90%' }} />

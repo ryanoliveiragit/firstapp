@@ -393,10 +393,10 @@ export default function Dashboard() {
   ] as const;
 
   return (
-    <div className="app-shell">
-      <div className="grid-overlay" />
-      <div className="glow-orb bg-primary/25 -left-20 top-10 w-72 h-72 rounded-full floating" />
-      <div className="glow-orb bg-foreground/10 -right-24 bottom-10 w-80 h-80 rounded-full floating" />
+    <div >
+      <div />
+      <div />
+      <div  />
 
       {showAdminModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">

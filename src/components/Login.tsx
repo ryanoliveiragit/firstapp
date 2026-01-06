@@ -139,7 +139,7 @@ const Login = () => {
       <div className="w-full max-w-lg space-y-10">
         {/* Header */}
         <div className="text-center space-y-3">
-          <h1 className="text-4xl font-light text-white tracking-tight">
+          <h1 className="text-4xl font-light text-primary tracking-tight">
             Synapse
           </h1>
           <p className="text-base text-white/60 font-light">

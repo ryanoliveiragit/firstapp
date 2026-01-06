@@ -6,6 +6,7 @@ import KeyListTable from './KeyListTable';
 import CreateKeyModal from './CreateKeyModal';
 import EditKeyModal from './EditKeyModal';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
+import { Button } from '../ui/button';
 
 export default function AdminPanel() {
   const [keys, setKeys] = useState<LicenseKey[]>([]);
@@ -104,13 +105,13 @@ export default function AdminPanel() {
               Atualizar
             </button>
 
-            <button
+            <Button
               onClick={() => setIsCreateModalOpen(true)}
               className="glass-card px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 shadow-lg"
             >
               <Plus className="w-4 h-4" strokeWidth={2} />
               Nova Chave
-            </button>
+            </Button>
           </div>
         </div>
       </div>
