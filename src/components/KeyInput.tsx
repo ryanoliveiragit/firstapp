@@ -136,50 +136,31 @@ const KeyInput = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background p-4">
-      {/* Scan line effect */}
-      <div className="scan-line" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Synapse
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Sistema de otimização inteligente
+          </p>
+        </div>
 
-      {/* Grid background */}
-      <div className="ai-grid-bg" />
-
-      {/* Glow orbs */}
-      <div className="glow-orb-primary" style={{ top: '10%', left: '15%' }} />
-      <div className="glow-orb-secondary" style={{ bottom: '15%', right: '10%' }} />
-
-      {/* Particles */}
-      <div className="particle" style={{ top: '20%', left: '25%' }} />
-      <div className="particle" style={{ top: '60%', right: '30%' }} />
-      <div className="particle" style={{ top: '40%', left: '70%' }} />
-      <div className="particle" style={{ bottom: '30%', left: '40%' }} />
-
-      <div className="w-full max-w-md space-y-6 relative z-10">
-        <Card className="glass-panel backdrop-blur-xl shadow-2xl cyber-glow transition-all duration-500 border-primary/20">
+        {/* Card */}
+        <Card className="border-border/50">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold tracking-tight">Insira sua chave de acesso</CardTitle>
+            <CardTitle className="text-xl font-medium">Chave de acesso</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Insira sua chave de acesso para continuar
+              Insira sua chave para continuar
             </p>
           </CardHeader>
-
-          <CardContent className="px-8 pb-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <div className="relative">
-                  <Key className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary" />
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                    {isValidating && (
-                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                      disabled={isValidating}
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="license-key"
                     type={showPassword ? "text" : "password"}
@@ -188,21 +169,37 @@ const KeyInput = () => {
                     onPaste={handlePaste}
                     placeholder="XXXX-XXXX-XXXX-XXXX"
                     maxLength={19}
-                    className={`h-14 pl-12 pr-24 text-center font-mono text-lg tracking-wider bg-card/50 transition-all ${
+                    className={`pl-9 pr-16 h-11 font-mono text-sm ${
                       error
                         ? 'border-destructive focus-visible:ring-destructive'
-                        : isValidating
-                        ? 'border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
-                        : 'border-border focus-visible:border-primary focus-visible:shadow-[0_0_15px_hsl(var(--primary)/0.2)]'
+                        : ''
                     }`}
                     disabled={isValidating}
                     autoFocus
                   />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {isValidating && (
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      disabled={isValidating}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 text-destructive text-sm p-3 bg-destructive/10 border border-destructive/20 rounded-lg animate-in slide-in-from-top-1">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
@@ -210,34 +207,26 @@ const KeyInput = () => {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-medium shadow-lg button-shine button-hover transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                className="w-full h-10"
                 disabled={isValidating || !key}
+                size="default"
               >
                 {isValidating ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Validando...</span>
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Key className="w-4 h-4" />
-                    <span>Ativar</span>
-                  </span>
+                  'Continuar'
                 )}
               </Button>
-
-              <p className="text-xs text-center text-muted-foreground pt-2">
-                Não tem uma chave?{' '}
-                <a href="#" className="text-primary hover:underline font-medium">
-                  Adquira aqui
-                </a>
-              </p>
             </form>
           </CardContent>
         </Card>
 
-        <p className="mt-8 text-center text-xs text-muted-foreground">
-          Synapse v1.5.0
+        {/* Footer */}
+        <p className="text-center text-xs text-muted-foreground">
+          v1.5.0
         </p>
       </div>
     </div>
