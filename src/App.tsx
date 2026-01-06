@@ -4,6 +4,7 @@ import { useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import KeyInput from "./components/KeyInput";
 import Dashboard from "./components/Dashboard";
+import AdminPanel from "./components/admin/AdminPanel";
 import { Toaster } from "sonner";
 
 // Mensagens de análise da IA
@@ -29,8 +30,23 @@ const getAnalysisMessages = (validationResult: 'success' | 'error' | null) => {
 };
 
 function App() {
-  const { user, licenseKey, isLoading, isValidating, validationResult, backendMessages } = useAuth();
+  const { user, licenseKey, isValidating, validationResult, backendMessages } = useAuth();
   const [currentMessage, setCurrentMessage] = useState('');
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+
+  // Verificar se está na rota /admin
+  useEffect(() => {
+    const checkAdminRoute = () => {
+      const path = window.location.pathname;
+      setIsAdminRoute(path === '/admin' || path.startsWith('/admin/'));
+    };
+
+    checkAdminRoute();
+
+    // Listen for route changes
+    window.addEventListener('popstate', checkAdminRoute);
+    return () => window.removeEventListener('popstate', checkAdminRoute);
+  }, []);
 
   // Efeito para atualizar mensagens do backend com animação
   useEffect(() => {
@@ -53,13 +69,23 @@ function App() {
     }
   }, [backendMessages, isValidating, validationResult]);
 
+  // Rota /admin - não precisa de autenticação
+  if (isAdminRoute) {
+    return (
+      <>
+        <Toaster position="top-right" richColors closeButton />
+        <AdminPanel />
+      </>
+    );
+  }
+
   // Mostrar loading apenas quando está validando a chave
   if (isValidating) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-black relative">
         {/* Container principal com skeleton */}
         <div className="w-full max-w-2xl px-6 mb-12">
-          <div className="bg-zinc-900/50 border-2 border-dashed border-zinc-700/50 rounded-2xl p-10 relative backdrop-blur-sm">
+          <div>
             {/* Linhas skeleton animadas */}
             <div className="space-y-5">
               <div className="h-3 bg-zinc-800/30 rounded border border-dashed border-zinc-700/30 skeleton-line" style={{ width: '90%' }} />

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-export type AccentColor = 'zinc' | 'blue' | 'purple' | 'green' | 'orange' | 'red';
+export type AccentColor = 'dark' | 'light';
 
 interface ThemeContextType {
   theme: 'dark' | 'light';
@@ -15,29 +15,13 @@ interface ThemeContextType {
 }
 
 const accentColors: Record<AccentColor, { light: string; dark: string }> = {
-  zinc: {
-    light: '0 0% 9%',
-    dark: '0 0% 98%'
+  dark: {
+    light: '0 0% 4%',      // Preto profundo para modo claro
+    dark: '0 0% 98%'       // Branco para modo escuro
   },
-  blue: {
-    light: '221 83% 53%',
-    dark: '217 91% 60%'
-  },
-  purple: {
-    light: '262 83% 58%',
-    dark: '263 70% 65%'
-  },
-  green: {
-    light: '142 71% 45%',
-    dark: '142 76% 36%'
-  },
-  orange: {
-    light: '25 95% 53%',
-    dark: '20 91% 60%'
-  },
-  red: {
-    light: '0 72% 51%',
-    dark: '0 72% 51%'
+  light: {
+    light: '0 0% 98%',     // Branco para modo claro
+    dark: '0 0% 4%'        // Preto profundo para modo escuro
   }
 };
 
@@ -51,7 +35,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
     const saved = localStorage.getItem('accentColor');
-    return (saved as AccentColor) || 'zinc';
+    // Validar se o valor salvo é válido, caso contrário usar 'dark' como padrão
+    if (saved === 'dark' || saved === 'light') {
+      return saved as AccentColor;
+    }
+    return 'dark';
   });
 
   const [animations, setAnimationsState] = useState(() => {
@@ -73,6 +61,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = window.document.documentElement;
+    
+    // Validar accentColor antes de usar
+    if (accentColor !== 'dark' && accentColor !== 'light') {
+      // Se inválido, corrigir e retornar (evita loop)
+      setAccentColorState('dark');
+      localStorage.setItem('accentColor', 'dark');
+      return;
+    }
+    
     const colors = accentColors[accentColor];
 
     if (theme === 'dark') {

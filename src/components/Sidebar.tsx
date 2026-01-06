@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { FileKey, FileCode2, Settings, User, LogOut, Zap, Activity, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileKey, FileCode2, Settings, User, LogOut, Activity, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,37 +17,73 @@ const menuItems = [
   { id: 'profile', label: 'Perfil', icon: User },
 ];
 
+const typingTexts = [
+  'Otimizando performance...',
+  'Analisando sistema...',
+  'Melhorando velocidade...',
+  'Limpando recursos...',
+  'Acelerando processos...',
+];
+
 export default function Sidebar({ activeTab, setActiveTab, isOptimizationsLoading }: SidebarProps) {
   const { logout } = useAuth();
-  const [logoError, setLogoError] = useState(false);
+
+  const [typingText, setTypingText] = useState('');
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentFullText = typingTexts[currentTextIndex];
+    const timeout = setTimeout(
+      () => {
+        if (!isDeleting) {
+          if (typingText.length < currentFullText.length) {
+            setTypingText(currentFullText.slice(0, typingText.length + 1));
+          } else {
+            setTimeout(() => setIsDeleting(true), 2000);
+          }
+        } else {
+          if (typingText.length > 0) {
+            setTypingText(typingText.slice(0, -1));
+          } else {
+            setIsDeleting(false);
+            setCurrentTextIndex((prev) => (prev + 1) % typingTexts.length);
+          }
+        }
+      },
+      isDeleting ? 50 : 80
+    );
+
+    return () => clearTimeout(timeout);
+  }, [typingText, isDeleting, currentTextIndex]);
 
   return (
-    <div className="relative w-64 h-screen border-r border-white/10 glass-panel flex flex-col animate-slide-in-left overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/0 pointer-events-none" />
-      <div className="absolute inset-0 grid-overlay opacity-50" />
-      <div className="p-5 pb-4 relative z-10">
-        <div className="flex items-center gap-3 animate-fade-in-up">
-          <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center overflow-hidden hover:scale-105 transition-transform duration-300">
-            {!logoError ? (
-              <img
-                src="/logo.png"
-                alt="Synapse Logo"
-                className="w-full h-full object-cover"
-                onError={() => setLogoError(true)}
-              />
-            ) : (
-              <Zap className="w-5 h-5 text-primary" strokeWidth={2.5} />
-            )}
-          </div>
-          <div>
-            <h1 className="text-base font-semibold tracking-tight">synapse</h1>
-            <p className="text-xs text-muted-foreground">Performance Suite</p>
+    <div className="relative w-64 h-screen bg-background backdrop-blur-xl border-r border-white/5 flex flex-col">
+      {/* Header minimalista */}
+      <div className="p-6 border-b border-white/5">
+        <div className="flex flex-col items-center gap-4">
+       
+
+          {/* Nome */}
+          <div className="text-center">
+            <h1 className="text-xl font-light tracking-widest text-[#b7ff58] mb-2">
+              SYNAPSE
+            </h1>
+            
+            {/* Texto digitando */}
+            <div className="h-2 flex items-center justify-center">
+              <p className="text-xs text-white/50 font-mono">
+                {typingText}
+                <span className="inline-block w-0.5 h-3 bg-white/50 ml-0.5 animate-blink" />
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-3 space-y-1 relative z-10">
-        {menuItems.map((item, index) => {
+      {/* Navigation minimalista */}
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+        {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           const isOptimizationsButton = item.id === 'optimizations';
@@ -62,38 +98,107 @@ export default function Sidebar({ activeTab, setActiveTab, isOptimizationsLoadin
               }}
               disabled={isLoadingOptimizations}
               className={cn(
-                'group w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium animate-fade-in-up button-shine',
+                'group relative w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300',
                 isActive
-                  ? 'border border-primary/30 bg-white/10 text-foreground shadow-[0_10px_40px_-25px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.05)]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5 hover:border hover:border-white/10',
-                isLoadingOptimizations && 'opacity-70 cursor-not-allowed'
+                  ? 'bg-white/10 text-white'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/5',
+                isLoadingOptimizations && 'opacity-50 cursor-not-allowed'
               )}
-              style={{ animationDelay: `${index * 50}ms` }}
-              aria-busy={isLoadingOptimizations}
             >
-              <span className="w-2 h-2 rounded-full bg-primary/60 shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
-              {isLoadingOptimizations ? (
-                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2} />
-              ) : (
-                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" strokeWidth={2} />
+              {/* Indicador ativo */}
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[#b7ff58] rounded-r-full" />
               )}
-              <span className="flex-1 text-left">
-                {isLoadingOptimizations ? 'Buscando otimizações...' : item.label}
+              
+              {/* Icon */}
+              {isLoadingOptimizations ? (
+                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
+              ) : (
+                <Icon 
+                  className="w-4 h-4 transition-transform group-hover:scale-110" 
+                  strokeWidth={1.5} 
+                />
+              )}
+              
+              {/* Label */}
+              <span className="text-sm font-light">
+                {item.label}
               </span>
             </button>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/10 relative z-10 animate-fade-in" style={{ animationDelay: '300ms' }}>
+      {/* Footer minimalista */}
+      <div className="p-4 border-t border-white/5">
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-200 hover:scale-[1.02]"
+          className="group w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/5 transition-all duration-300"
         >
-          <LogOut className="w-4 h-4" strokeWidth={2} />
-          <span>Sair</span>
+          <LogOut className="w-4 h-4 transition-transform group-hover:-translate-x-1" strokeWidth={1.5} />
+          <span className="text-sm font-light">Sair</span>
         </button>
       </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+
+        @keyframes draw-stroke {
+          0%, 100% {
+            stroke-dasharray: 150;
+            stroke-dashoffset: 150;
+          }
+          50% {
+            stroke-dasharray: 150;
+            stroke-dashoffset: 0;
+          }
+        }
+
+        @keyframes blink {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0;
+          }
+        }
+
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-draw-stroke {
+          animation: draw-stroke 4s ease-in-out infinite;
+        }
+
+        .animate-blink {
+          animation: blink 1s step-end infinite;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 2px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
     </div>
   );
 }

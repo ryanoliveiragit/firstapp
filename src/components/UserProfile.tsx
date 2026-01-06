@@ -44,8 +44,8 @@ const UserProfile = () => {
 
         <div className="text-center">
           <div className="mb-6 flex justify-center">
-            <div className="w-32 h-32 rounded-full border-4 border-indigo-500 shadow-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-              <Key className="w-16 h-16 text-indigo-500" />
+            <div className="w-32 h-32 rounded-full border-4 border-primary shadow-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+              <Key className="w-16 h-16 text-primary" />
             </div>
           </div>
 
