@@ -136,7 +136,7 @@ const Login = () => {
         </div>
       )}
 
-      <div className="w-full max-w-lg space-y-10">
+      <div className="w-full max-w-lg space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-light text-primary tracking-tight">
@@ -148,8 +148,8 @@ const Login = () => {
         </div>
 
         {/* Form Container */}
-        <div className="space-y-6">
-          <form onSubmit={handleLogin} className="space-y-5">
+        <div className="space-y-8">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-3">
               <div className="relative">
                 <Input

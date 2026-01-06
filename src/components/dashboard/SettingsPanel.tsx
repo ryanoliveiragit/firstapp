@@ -4,12 +4,9 @@ import { Toggle } from "@/components/ui/toggle";
 import { useTheme, type AccentColor } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
-const colorOptions: { value: AccentColor; label: string; preview: string }[] = [
-  { value: "orange", label: "Laranja", preview: "#130501" },
-  { value: "red", label: "Vermelho", preview: "#ff6b6b" },
-  { value: "blue", label: "Azul", preview: "#4ecdc4" },
-  { value: "green", label: "Verde", preview: "#95e1d3" },
-  { value: "purple", label: "Roxo", preview: "#aa96da" },
+const colorOptions: { value: AccentColor; label: string; preview: string; description: string }[] = [
+  { value: "dark", label: "Escuro", preview: "#0a0a0a", description: "Preto profundo" },
+  { value: "light", label: "Claro", preview: "#fafafa", description: "Branco puro" },
 ];
 
 export function SettingsPanel() {
@@ -23,24 +20,11 @@ export function SettingsPanel() {
   } = useTheme();
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="glass-panel rounded-xl p-6 border border-white/10 bg-gradient-to-r from-white/5 to-transparent">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl border-2 border-primary/30 shadow-lg shadow-primary/20 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
-            <Settings className="w-8 h-8 text-primary" strokeWidth={2} />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-glow">Configurações</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Personalize sua experiência no aplicativo
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Seção: Aparência */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center gap-2 text-sm font-semibold text-primary">
           <Palette className="w-4 h-4" />
           <span>Aparência e Tema</span>
@@ -73,43 +57,64 @@ export function SettingsPanel() {
 
             {/* Cor de Destaque */}
             <div className="glass-card rounded-xl p-5 border border-white/10 hover:border-primary/30 transition-all">
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl glass-panel flex items-center justify-center border border-primary/20">
                     <Palette className="w-6 h-6 text-primary" strokeWidth={2} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold">Cor de Destaque</p>
+                    <p className="text-sm font-semibold">Tema de Cor</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Escolha a cor principal do aplicativo
+                      Escolha o esquema de cores do aplicativo
                     </p>
                   </div>
                 </div>
 
                 <div className="h-px bg-gradient-to-r from-primary/20 to-transparent" />
 
-                {/* Grid de Cores */}
-                <div className="grid grid-cols-5 gap-3">
+                {/* Grid de Cores - Layout melhorado */}
+                <div className="grid grid-cols-2 gap-4">
                   {colorOptions.map((color) => (
                     <button
                       key={color.value}
                       onClick={() => setAccentColor(color.value)}
                       className={cn(
-                        "group relative h-14 rounded-xl border-2 transition-all overflow-hidden",
+                        "group relative rounded-xl border-2 transition-all duration-200 overflow-hidden",
+                        "flex flex-col items-center justify-center p-4 min-h-[100px]",
                         accentColor === color.value
-                          ? "border-primary scale-105 shadow-lg shadow-primary/20"
-                          : "border-white/10 hover:border-primary/50 hover:scale-105"
+                          ? "border-primary scale-[1.02] shadow-lg shadow-primary/20 bg-primary/5"
+                          : "border-white/10 hover:border-primary/50 hover:scale-[1.01] hover:bg-white/5"
                       )}
                       title={color.label}
-                      aria-label={`Selecionar cor ${color.label}`}
+                      aria-label={`Selecionar tema ${color.label}`}
                     >
+                      {/* Preview Color Circle */}
                       <div
-                        className="w-full h-full"
+                        className={cn(
+                          "w-12 h-12 rounded-full mb-3 transition-all duration-200 border-2",
+                          accentColor === color.value
+                            ? "border-primary/50 shadow-lg shadow-primary/20 scale-110"
+                            : "border-white/20 group-hover:border-primary/30"
+                        )}
                         style={{ backgroundColor: color.preview }}
                       />
+                      
+                      {/* Label */}
+                      <span className="text-sm font-medium text-foreground mb-1">
+                        {color.label}
+                      </span>
+                      
+                      {/* Description */}
+                      <span className="text-xs text-muted-foreground">
+                        {color.description}
+                      </span>
+                      
+                      {/* Checkmark indicator */}
                       {accentColor === color.value && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                          <div className="w-3 h-3 bg-white rounded-full shadow-md" />
+                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
                       )}
                     </button>

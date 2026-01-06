@@ -4,7 +4,6 @@ import Sidebar from "./Sidebar";
 import { Command } from "@tauri-apps/plugin-shell";
 import { resolveResource } from "@tauri-apps/api/path";
 import { toast } from "sonner";
-import { DashboardHeader } from "./dashboard/DashboardHeader";
 import { FPSBoostCard } from "./dashboard/FPSBoostCard";
 import { AutoGPUCard } from "./dashboard/AutoGPUCard";
 import { SettingsPanel } from "./dashboard/SettingsPanel";
@@ -13,7 +12,6 @@ import { StatusPanel } from "./dashboard/StatusPanel";
 import { MaintenanceCard } from "./dashboard/MaintenanceCard";
 import { NetworkOptimizerCard } from "./dashboard/NetworkOptimizerCard";
 import { PerformanceOptimizerCard } from "./dashboard/PerformanceOptimizerCard";
-import { OptimizationLevelBadge } from "./dashboard/OptimizationLevelBadge";
 import { FPSExtremeCard } from "./dashboard/FPSExtremeCard";
 import {
   Card,
@@ -23,6 +21,8 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Info } from "lucide-react";
+import { DashboardHeader } from "./dashboard/DashboardHeader";
+import { Button } from "./ui/button";
 
 type OptimizationLevel = "basica" | "intermediaria" | "avancada";
 
@@ -31,8 +31,8 @@ export default function Dashboard() {
   const [optimizationLevel, setOptimizationLevel] =
     useState<OptimizationLevel>("avancada");
   const [isFetchingOptimizations, setIsFetchingOptimizations] = useState(false);
-  const [showOptimizationModal, setShowOptimizationModal] = useState(false);
-  const [optimizationFlowStep, setOptimizationFlowStep] = useState<
+  const [, setShowOptimizationModal] = useState(false);
+  const [, setOptimizationFlowStep] = useState<
     "intro" | "fetch" | "found" | "redirecting"
   >("intro");
   const [isExecuting, setIsExecuting] = useState(false);
@@ -303,7 +303,7 @@ export default function Dashboard() {
   const renderOptimizationContent = () => {
     if (optimizationLevel === "avancada") {
       return (
-        <div className="grid gap-4 animate-fade-in-up md:grid-cols-2 lg:grid-cols-3 auto-rows-fr z-50 ">
+        <div className="grid gap-6 animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr items-stretch z-50">
           <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
           <PerformanceOptimizerCard
             isExecuting={isOptimizingPerformance}
@@ -398,8 +398,8 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
           <div className="glass-panel rounded-2xl max-w-md w-full mx-4 p-6 space-y-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <span className="text-xl">!</span>
+              <div className="flexitems-center justify-center rounded-full text-primary">
+                <span className="text-xl ">!</span>
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">
@@ -424,7 +424,7 @@ export default function Dashboard() {
                 Cancelar
               </button>
               <button
-                className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:brightness-110 transition-all shadow-lg shadow-primary/30"
+                className="px-4 py-2 text-sm rounded-md bg-primary text-black hover:brightness-110 transition-all shadow-lg shadow-primary/30"
                 onClick={() => {
                   setHasAdminConsent(true);
                   setShowAdminModal(false);
@@ -438,62 +438,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
-      {showOptimizationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
-          <div className="glass-panel rounded-2xl max-w-md w-full mx-4 p-6 space-y-5 animate-fade-in-up">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <span className="text-lg">⏳</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">
-                  Sincronizando otimizações
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Estamos buscando e aplicando automaticamente o nível avançado
-                  para sua conta.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {optimizationFlowSteps.map((step, index) => {
-                const currentIndex = optimizationFlowSteps.findIndex(
-                  (flowStep) => flowStep.key === optimizationFlowStep
-                );
-                const isActive = optimizationFlowStep === step.key;
-                const isDone = index < currentIndex;
-
-                return (
-                  <div
-                    key={step.key}
-                    className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-                        isDone
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-primary/10 text-primary"
-                      }`}
-                    >
-                      {isActive ? "..." : isDone ? "✓" : index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{step.label}</p>
-                      {isActive && (
-                        <p className="text-xs text-muted-foreground">
-                          Processando...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
       <div className="relative flex h-screen">
         <Sidebar
           activeTab={activeTab}
@@ -502,9 +446,9 @@ export default function Dashboard() {
         />
         <div className="relative flex-1 overflow-auto">
           <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="p-6 lg:p-10 space-y-6 relative z-10 max-w-7xl mx-auto">
-            <div className="animate-fade-in-up flex flex-col gap-4">
-              <DashboardHeader activeTab={activeTab} user={user} />
+          <div className="p-6 lg:p-10 space-y-8 relative z-10 max-w-7xl mx-auto">
+            <div className="animate-fade-in-up flex flex-col gap-6">
+              <DashboardHeader />
             </div>
 
             {showConsole && (
@@ -552,15 +496,14 @@ export default function Dashboard() {
             )}
 
             {activeTab === "optimizations" && (
-              <div className="space-y-4">
-                <OptimizationLevelBadge level={optimizationLevel} />
+              <div className="space-y-6">
                 {renderOptimizationContent()}
               </div>
             )}
 
             {activeTab === "utilities" && (
               <div
-                className="grid gap-4 animate-fade-in-up md:grid-cols-2 xl:grid-cols-2 auto-rows-fr"
+                className="grid gap-6 animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr items-stretch"
                 style={{ animationDelay: "100ms" }}
               >
                 <AutoGPUCard

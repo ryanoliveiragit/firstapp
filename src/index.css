@@ -159,19 +159,19 @@
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out;
+  animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s ease-out;
+  animation: scale-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-slide-in-left {
-  animation: slide-in-left 0.3s ease-out;
+  animation: slide-in-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ━━━ COMPONENTES - APLICANDO 60-30-10 ━━━ */
@@ -185,16 +185,19 @@
 .glass-panel {
   @apply bg-card border border-border rounded-xl;
   box-shadow: 0 1px 2px hsl(var(--background) / 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card {
   @apply bg-card/50 border border-border/40 rounded-lg;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 30% - Hover States (Secundária) */
 .glass-card:hover {
   @apply border-accent/60 bg-card/80;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(var(--background) / 0.3);
 }
 
 /* 10% - Badges de Ação (Destaque) */

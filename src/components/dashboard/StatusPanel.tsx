@@ -225,10 +225,10 @@ export function StatusPanel() {
 
       {/* Windows Info */}
       {osInfo.name && (
-        <Card className="card-hover animate-fade-in glass-panel glass-card">
-          <CardContent className="p-4">
+        <Card className="card-hover animate-fade-in glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+          <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+              <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
                 <Monitor className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
@@ -245,12 +245,12 @@ export function StatusPanel() {
       )}
 
       {/* Main Stats */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in glass-panel glass-card">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="card-hover animate-fade-in glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                <Cpu className="w-6 h-6 text-primary" />
+              <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
+                <Cpu className="w-5 h-5 text-primary" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg mb-1">CPU</h3>
@@ -272,11 +272,11 @@ export function StatusPanel() {
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in glass-panel glass-card" style={{ animationDelay: '100ms' }}>
+        <Card className="card-hover animate-fade-in glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10" style={{ animationDelay: '100ms' }}>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                <Gauge className="w-6 h-6 text-primary" />
+              <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
+                <Gauge className="w-5 h-5 text-primary" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg mb-1">GPU</h3>
@@ -296,11 +296,11 @@ export function StatusPanel() {
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in md:col-span-2 lg:col-span-1 glass-panel glass-card" style={{ animationDelay: '200ms' }}>
+        <Card className="card-hover animate-fade-in md:col-span-2 lg:col-span-1 glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10" style={{ animationDelay: '200ms' }}>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                <MemoryStick className="w-6 h-6 text-primary" />
+              <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
+                <MemoryStick className="w-5 h-5 text-primary" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-lg mb-1">RAM</h3>
@@ -322,10 +322,10 @@ export function StatusPanel() {
       </div>
 
       {/* Historical Graph */}
-      <Card className="animate-fade-in glass-panel glass-card" style={{ animationDelay: '300ms' }}>
+      <Card className="card-hover animate-fade-in glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10" style={{ animationDelay: '300ms' }}>
         <CardContent className="p-6">
           <h3 className="font-semibold mb-4">Histórico de Uso</h3>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <LineChart data={history.cpu} color={getColor(stats.cpu)} label="CPU" />
             <LineChart data={history.gpu} color={getColor(stats.gpu)} label="GPU" />
             <LineChart data={history.ram} color={getColor(stats.ram)} label="RAM" />
@@ -335,7 +335,7 @@ export function StatusPanel() {
 
       {/* Disk Information */}
       {disks.length > 0 && (
-        <Card className="animate-fade-in glass-panel glass-card" style={{ animationDelay: '400ms' }}>
+        <Card className="card-hover animate-fade-in glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10" style={{ animationDelay: '400ms' }}>
           <CardContent className="p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <HardDrive className="w-4 h-4" />
@@ -371,7 +371,7 @@ export function StatusPanel() {
       )}
 
       {/* Summary Panel */}
-      <Card className="animate-fade-in glass-panel glass-card" style={{ animationDelay: '500ms' }}>
+      <Card className="card-hover animate-fade-in glass-panel glass-card border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10" style={{ animationDelay: '500ms' }}>
         <CardContent className="p-6">
           <h3 className="font-semibold mb-4">Resumo do Sistema</h3>
           <div className="space-y-4">
