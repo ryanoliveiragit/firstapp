@@ -393,11 +393,7 @@ export default function Dashboard() {
   ] as const;
 
   return (
-    <div >
-      <div />
-      <div />
-      <div  />
-
+    <div className="app-shell">
       {showAdminModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur">
           <div className="glass-panel rounded-2xl max-w-md w-full mx-4 p-6 space-y-5">
