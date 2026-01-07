@@ -82,6 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setValidationResult(null);
       setBackendMessages([]);
       const backendUrl = getBackendUrl();
+      console.log('[AuthContext] Backend URL:', backendUrl);
+      console.log('[AuthContext] VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
       
       // Normalizar a chave: remover hífens, espaços e limitar a 16 caracteres
       let cleanKey = key.trim().replace(/[-\s]/g, '').toUpperCase();
@@ -92,8 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Usar streaming para receber mensagens progressivas
+      const apiUrl = `${backendUrl}/api/auth/validate-stream`;
+      console.log('[AuthContext] Tentando conectar em:', apiUrl);
+      
       return new Promise<void>((resolve, reject) => {
-        fetch(`${backendUrl}/api/auth/validate-stream`, {
+        fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -182,33 +187,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           })
           .catch((error) => {
+            console.error('[AuthContext] Erro na requisição:', error);
+            console.error('[AuthContext] Tipo do erro:', error?.constructor?.name);
+            console.error('[AuthContext] Mensagem:', error?.message);
+            console.error('[AuthContext] Stack:', error?.stack);
+            
             setValidationResult('error');
             setIsLoading(false);
             setIsValidating(false);
-            if (error instanceof TypeError && error.message.includes('fetch')) {
-              toast.error('Erro de conexão', {
-                description: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
-                duration: 5000,
-              });
-            } else {
-              toast.error('Erro', {
-                description: error.message || 'Erro ao validar chave',
-                duration: 5000,
-              });
+            
+            let errorMessage = 'Erro ao validar chave';
+            let errorDescription = 'Tente novamente mais tarde.';
+            
+            if (error instanceof TypeError) {
+              if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+                errorMessage = 'Erro de conexão';
+                errorDescription = `Não foi possível conectar ao servidor (${backendUrl}). Verifique sua conexão e se o backend está rodando.`;
+              } else if (error.message.includes('NetworkError')) {
+                errorMessage = 'Erro de rede';
+                errorDescription = 'Erro de rede ao tentar conectar ao servidor. Verifique sua conexão com a internet.';
+              }
+            } else if (error instanceof Error) {
+              errorMessage = 'Erro';
+              errorDescription = error.message || 'Erro desconhecido ao validar chave.';
             }
+            
+            toast.error(errorMessage, {
+              description: errorDescription,
+              duration: 6000,
+            });
             reject(error);
           });
       });
     } catch (error) {
+      console.error('[AuthContext] Erro no catch externo:', error);
       setValidationResult('error');
       setIsLoading(false);
       setIsValidating(false);
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        toast.error('Erro de conexão', {
-          description: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
-          duration: 5000,
-        });
+      
+      let errorMessage = 'Erro de conexão';
+      let errorDescription = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+      
+      if (error instanceof TypeError) {
+        if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+          errorDescription = `Não foi possível conectar ao servidor (${getBackendUrl()}). Verifique sua conexão e se o backend está rodando.`;
+        }
       }
+      
+      toast.error(errorMessage, {
+        description: errorDescription,
+        duration: 6000,
+      });
       throw error;
     }
   };

@@ -302,7 +302,7 @@ export default function Dashboard() {
   const renderOptimizationContent = () => {
     if (optimizationLevel === "avancada") {
       return (
-        <div className="grid gap-6 animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr items-stretch z-50">
+        <div className="grid gap-8 animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr items-stretch z-50">
           <FPSBoostCard isApplying={isApplyingFPS} onApply={handleFPSBoost} />
           <PerformanceOptimizerCard
             isExecuting={isOptimizingPerformance}
@@ -496,7 +496,7 @@ export default function Dashboard() {
 
             {activeTab === "utilities" && (
               <div
-                className="grid gap-6 animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr items-stretch"
+                className="grid gap-8 animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr items-stretch"
                 style={{ animationDelay: "100ms" }}
               >
                 <AutoGPUCard
