@@ -9,12 +9,36 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3000;
   const corsOrigin = configService.get('CORS_ORIGIN') || 'http://localhost:1420';
+  
+  // Parse CORS origins - pode ser uma string única ou múltiplas separadas por vírgula
+  const allowedOrigins = corsOrigin.includes(',') 
+    ? corsOrigin.split(',').map(origin => origin.trim())
+    : [corsOrigin];
+  
+  // Adiciona suporte para Tauri (permite requisições sem origem ou com origem null)
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Permite requisições sem origem (como apps desktop Tauri)
+      if (!origin) {
+        return callback(null, true);
+      }
+      // Permite origens na lista
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        return callback(null, true);
+      }
+      // Permite requisições do Tauri (tauri://localhost)
+      if (origin.startsWith('tauri://')) {
+        return callback(null, true);
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  };
 
   // Enable CORS
-  app.enableCors({
-    origin: corsOrigin,
-    credentials: true,
-  });
+  app.enableCors(corsOptions);
 
   // Global validation pipe
   app.useGlobalPipes(

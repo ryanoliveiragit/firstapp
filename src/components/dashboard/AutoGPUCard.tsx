@@ -27,7 +27,7 @@ export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
 
   return (
     <Card className="card-hover animate-scale-in glass-panel glass-card h-full flex flex-col border border-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
-      <CardHeader className="p-6 pb-4">
+      <CardHeader className="p-6 pb-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-md transition-transform duration-300 hover:scale-110 border border-primary/20">
@@ -57,7 +57,7 @@ export function AutoGPUCard({ isExecuting, onExecute }: AutoGPUCardProps) {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col pt-0 px-6 pb-6">
-        <div className="flex-1 flex flex-col space-y-5">
+        <div className="flex-1 flex flex-col space-y-6">
           <ul className="space-y-2">
             {features.map((feature, index) => (
               <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">

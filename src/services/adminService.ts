@@ -1,5 +1,15 @@
 // Admin API Service - CRUD operations for license keys
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const getBackendUrl = () => {
+  const envBackend = import.meta.env.VITE_BACKEND_URL;
+  if (envBackend) {
+    return envBackend;
+  }
+  return 'http://127.0.0.1:3000';
+};
+
+const API_URL = `${getBackendUrl()}/api`;
+console.log('[AdminService] API URL:', API_URL);
+console.log('[AdminService] VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
 
 export interface LicenseKey {
   id: string;
