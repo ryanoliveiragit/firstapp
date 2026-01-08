@@ -1,4 +1,6 @@
 // Admin API Service - CRUD operations for license keys
+import { universalFetch } from '../utils/tauriFetch';
+
 const getBackendUrl = () => {
   const envBackend = import.meta.env.VITE_BACKEND_URL;
   if (envBackend) {
@@ -46,7 +48,7 @@ export interface UpdateKeyDto {
 class AdminService {
   // Get all license keys
   async getAllKeys(): Promise<LicenseKey[]> {
-    const response = await fetch(`${API_URL}/admin/keys`, {
+    const response = await universalFetch(`${API_URL}/admin/keys`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +64,7 @@ class AdminService {
 
   // Get license key by ID
   async getKeyById(id: string): Promise<LicenseKey> {
-    const response = await fetch(`${API_URL}/admin/keys/${id}`, {
+    const response = await universalFetch(`${API_URL}/admin/keys/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ class AdminService {
 
   // Get license key by key value
   async getKeyByValue(key: string): Promise<LicenseKey> {
-    const response = await fetch(`${API_URL}/admin/keys/key/${key}`, {
+    const response = await universalFetch(`${API_URL}/admin/keys/key/${key}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -94,7 +96,7 @@ class AdminService {
 
   // Create new license key
   async createKey(data: CreateKeyDto): Promise<LicenseKey> {
-    const response = await fetch(`${API_URL}/admin/keys`, {
+    const response = await universalFetch(`${API_URL}/admin/keys`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +114,7 @@ class AdminService {
 
   // Update license key
   async updateKey(id: string, data: UpdateKeyDto): Promise<LicenseKey> {
-    const response = await fetch(`${API_URL}/admin/keys/${id}`, {
+    const response = await universalFetch(`${API_URL}/admin/keys/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -130,7 +132,7 @@ class AdminService {
 
   // Delete license key
   async deleteKey(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/admin/keys/${id}`, {
+    const response = await universalFetch(`${API_URL}/admin/keys/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -144,7 +146,7 @@ class AdminService {
 
   // Reset key usage
   async resetKeyUsage(id: string): Promise<LicenseKey> {
-    const response = await fetch(`${API_URL}/admin/keys/${id}/reset`, {
+    const response = await universalFetch(`${API_URL}/admin/keys/${id}/reset`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

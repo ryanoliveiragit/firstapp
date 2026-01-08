@@ -228,6 +228,18 @@ fn open_discord_oauth(client_id: String, redirect_uri: Option<String>) -> Result
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_http::init())
+        .setup(|app| {
+            // Abre DevTools automaticamente apenas em modo debug
+            #[cfg(debug_assertions)]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                    println!("🔧 DevTools aberto automaticamente (modo debug)");
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_system_stats,
             start_oauth_listener,

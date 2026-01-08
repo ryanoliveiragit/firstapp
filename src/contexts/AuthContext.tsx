@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { universalFetch } from '../utils/tauriFetch';
 
 export interface User {
   id: string;
@@ -31,11 +32,23 @@ export const useAuth = () => {
 
 // URL do backend (pode ser configurada via variável de ambiente)
 const getBackendUrl = () => {
+  // Em produção, as variáveis VITE_* são substituídas em tempo de build
+  // Se não estiver definida, usa o padrão
   const envBackend = import.meta.env.VITE_BACKEND_URL;
+  
+  // Log para debug - mostrar o que está sendo usado
+  console.log('[getBackendUrl] VITE_BACKEND_URL:', envBackend);
+  console.log('[getBackendUrl] import.meta.env:', import.meta.env);
+  
   if (envBackend) {
-    return envBackend;
+    // Remove barra final se houver
+    return envBackend.replace(/\/$/, '');
   }
-  return 'http://127.0.0.1:3000';
+  
+  // Fallback para desenvolvimento local
+  const fallback = 'http://127.0.0.1:3000';
+  console.warn('[getBackendUrl] VITE_BACKEND_URL não definida, usando fallback:', fallback);
+  return fallback;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -84,6 +97,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const backendUrl = getBackendUrl();
       console.log('[AuthContext] Backend URL:', backendUrl);
       console.log('[AuthContext] VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+      console.log('[AuthContext] Modo:', import.meta.env.MODE);
+      console.log('[AuthContext] Dev:', import.meta.env.DEV);
+      console.log('[AuthContext] Prod:', import.meta.env.PROD);
+      
+      // Teste de conectividade antes de fazer a requisição real
+      console.log('[AuthContext] Testando conectividade básica...');
       
       // Normalizar a chave: remover hífens, espaços e limitar a 16 caracteres
       let cleanKey = key.trim().replace(/[-\s]/g, '').toUpperCase();
@@ -93,12 +112,111 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cleanKey = cleanKey.substring(0, 16);
       }
 
-      // Usar streaming para receber mensagens progressivas
-      const apiUrl = `${backendUrl}/api/auth/validate-stream`;
-      console.log('[AuthContext] Tentando conectar em:', apiUrl);
+      // Detectar se está no Tauri
+      // O plugin HTTP do Tauri pode não suportar streaming (SSE) corretamente
+      const isTauriEnv = typeof window !== 'undefined' && 
+                        ('__TAURI_INTERNALS__' in window || 
+                         typeof (window as any).__TAURI_INVOKE__ !== 'undefined' ||
+                         navigator.userAgent.toLowerCase().includes('tauri'));
       
+      // No Tauri, usar endpoint normal (sem streaming) para garantir compatibilidade
+      // Na web, usar streaming para melhor UX
+      const useStreaming = !isTauriEnv;
+      const apiUrl = useStreaming 
+        ? `${backendUrl}/api/auth/validate-stream`
+        : `${backendUrl}/api/auth/validate`;
+      
+      console.log('[AuthContext] Ambiente Tauri:', isTauriEnv);
+      console.log('[AuthContext] Usando streaming:', useStreaming);
+      console.log('[AuthContext] URL da API:', apiUrl);
+      
+      // Se não usar streaming (Tauri), fazer requisição simples
+      if (!useStreaming) {
+        console.log('[AuthContext] Usando endpoint normal (sem streaming)');
+        const startTime = Date.now();
+        
+        try {
+          const response = await universalFetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ key: cleanKey }),
+          });
+          
+          const elapsed = Date.now() - startTime;
+          console.log('[AuthContext] Resposta recebida em', elapsed, 'ms');
+          console.log('[AuthContext] Status:', response.status, response.statusText);
+          
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => 'Erro desconhecido');
+            console.error('[AuthContext] Erro na resposta:', response.status, errorText);
+            throw new Error(`Erro ao conectar ao servidor: ${response.status} ${response.statusText}`);
+          }
+          
+          const result = await response.json();
+          console.log('[AuthContext] Resultado:', result);
+          
+          if (result.valid) {
+            setValidationResult('success');
+            const userData: User = {
+              id: result.userId || 'unknown',
+              licenseKey: key.trim(),
+              isValid: true,
+            };
+            setUser(userData);
+            setLicenseKeyState(key.trim());
+            sessionStorage.setItem('license_key', key.trim());
+            sessionStorage.setItem('auth_user', JSON.stringify(userData));
+            toast.success('Autenticação bem-sucedida', {
+              description: 'Bem-vindo de volta! Redirecionando...',
+              duration: 3000,
+            });
+            setIsLoading(false);
+            setIsValidating(false);
+          } else {
+            setValidationResult('error');
+            toast.error('Falha na autenticação', {
+              description: result.message || 'Chave inválida',
+              duration: 4000,
+            });
+            setIsLoading(false);
+            setIsValidating(false);
+            throw new Error(result.message || 'Chave inválida');
+          }
+        } catch (error) {
+          console.error('[AuthContext] Erro na requisição:', error);
+          setValidationResult('error');
+          setIsLoading(false);
+          setIsValidating(false);
+          
+          let errorMessage = 'Erro ao validar chave';
+          let errorDescription = 'Tente novamente mais tarde.';
+          
+          if (error instanceof TypeError) {
+            if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+              errorMessage = 'Erro de conexão';
+              errorDescription = `Não foi possível conectar ao servidor (${backendUrl}). Verifique sua conexão e se o backend está rodando.`;
+            }
+          } else if (error instanceof Error) {
+            errorMessage = 'Erro';
+            errorDescription = error.message || 'Erro desconhecido ao validar chave.';
+          }
+          
+          toast.error(errorMessage, {
+            description: errorDescription,
+            duration: 6000,
+          });
+          throw error;
+        }
+      }
+      
+      // Se usar streaming (web), continuar com a lógica de streaming
       return new Promise<void>((resolve, reject) => {
-        fetch(apiUrl, {
+        console.log('[AuthContext] Iniciando fetch com streaming...');
+        const startTime = Date.now();
+        
+        universalFetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -106,8 +224,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           body: JSON.stringify({ key: cleanKey }),
         })
           .then(async (response) => {
+            const elapsed = Date.now() - startTime;
+            console.log('[AuthContext] Resposta recebida em', elapsed, 'ms');
+            console.log('[AuthContext] Status:', response.status, response.statusText);
+            console.log('[AuthContext] Headers:', Object.fromEntries(response.headers.entries()));
+            
             if (!response.ok) {
-              throw new Error('Erro ao conectar ao servidor');
+              const errorText = await response.text().catch(() => 'Erro desconhecido');
+              console.error('[AuthContext] Erro na resposta:', response.status, errorText);
+              throw new Error(`Erro ao conectar ao servidor: ${response.status} ${response.statusText}`);
             }
 
             const reader = response.body?.getReader();
@@ -241,6 +366,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
+
 
   const logout = () => {
     setUser(null);
