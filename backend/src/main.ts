@@ -58,6 +58,7 @@ async function bootstrap() {
   console.log(`📡 API disponível em http://localhost:${port}/api`);
   console.log(`📚 Documentação Swagger: http://localhost:${port}/api/docs`);
   console.log(`🔐 Endpoint de validação: POST http://localhost:${port}/api/auth/validate`);
+  console.log(`🌐 CORS: Totalmente liberado (permite todas as origens, incluindo apps desktop)`);
 }
 
 bootstrap();
